@@ -14,4 +14,4 @@ import time
 import shutil
 
 
-print("The environment is ready.")
+print("The environment is ready!")
