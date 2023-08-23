@@ -16,9 +16,9 @@ import shutil
 
 ## For local
 # CITIES = ['aleppo', 'daraa']
-CITIES = ['moschun', 'volnovakha']
-OUTPUT_DIR = "../../test/mwd/outputs"
-DATA_DIR = "../../test/mwd/data"
+#CITIES = ['moschun', 'volnovakha']
+#OUTPUT_DIR = "../../test/mwd/outputs"
+#DATA_DIR = "../../test/mwd/data"
 
 ## For artemisa
 #CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
@@ -27,9 +27,10 @@ DATA_DIR = "../../test/mwd/data"
 
 ## For workstation
 # CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-# CITIES = ['moschun', 'volnovakha']
-# OUTPUT_DIR = "/media/andre/Samsung8TB/mwd-latest/outputs"
-# DATA_DIR = "/media/andre/Samsung8TB/mwd-latest/data"
+CITIES = ['aleppo', 'hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha']
+#CITIES = ['hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha']
+OUTPUT_DIR = "/media/andre/Samsung8TB/mwd-latest/outputs"
+DATA_DIR = "/media/andre/Samsung8TB/mwd-latest/data"
 
 
 MODEL = "double"
@@ -471,7 +472,6 @@ class SiameseGenerator(Sequence):
 gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr, batch_size=BATCH_SIZE)
 gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va, batch_size=BATCH_SIZE)
 
-
 indices = np.random.randint(0, im_tr_pre.shape[0]//32, 5)
 
 for j, ind in enumerate(indices):
@@ -513,10 +513,15 @@ class SubgroupValidationCallback(Callback):
             	city_im_pre = self.im_pre[:self.length_list[i],:,:,:]
             	city_im_post = self.im_post[:self.length_list[i],:,:,:]
             	city_la = self.la[:self.length_list[i]]
+            	print(0, self.length_list[i])
             else:
-                city_im_pre = self.im_pre[self.length_list[i-1]:self.length_list[i-1]+self.length_list[i],:,:,:]
-                city_im_post = self.im_post[self.length_list[i-1]:self.length_list[i-1]+self.length_list[i],:,:,:]
-                city_la = self.la[self.length_list[i-1]:self.length_list[i-1]+self.length_list[i]]
+                previous_index_end = 0
+                for j in range(i):
+            	    previous_index_end += self.length_list[j]
+                print(previous_index_end, previous_index_end+self.length_list[i])
+                city_im_pre = self.im_pre[previous_index_end:previous_index_end+self.length_list[i],:,:,:]
+                city_im_post = self.im_post[previous_index_end:previous_index_end+self.length_list[i],:,:,:]
+                city_la = self.la[previous_index_end:previous_index_end+self.length_list[i]]
                         
             gen_city = SiameseGenerator((city_im_pre, city_im_post), city_la, batch_size=BATCH_SIZE)
             
@@ -525,6 +530,7 @@ class SubgroupValidationCallback(Callback):
 
 # ------------------------------
 
+print(im_va_pre.shape)
 
 print("+++++++++", gen_tr.__len__())
 MODEL_STORAGE_LOCATION = f"{RUN_DIR}/model"
@@ -666,21 +672,24 @@ print(f"""
     Parameters: {parameters}
 """)
 # ------------------------------------ Dominik 14.08.2023
-
+print(f"\n \n")
 for i, city in enumerate(CITIES):
             if i == 0:
             	city_im_pre = im_te_pre[:te_length[i],:,:,:]
             	city_im_post = im_te_post[:te_length[i],:,:,:]
             	city_la = la_te[:te_length[i]]
             else:
-                city_im_pre = im_te_pre[te_length[i-1]:te_length[i-1]+te_length[i],:,:,:]
-                city_im_post = im_te_post[te_length[i-1]:te_length[i-1]+te_length[i],:,:,:]
-                city_la = la_te[te_length[i-1]:te_length[i-1]+te_length[i]]
-                        
+                previous_index_end = 0
+                for j in range(i):
+            	    previous_index_end += te_length[j]
+                city_im_pre = im_te_pre[previous_index_end:previous_index_end+te_length[i],:,:,:]
+                city_im_post = im_te_post[previous_index_end:previous_index_end+te_length[i],:,:,:]
+                city_la = la_te[previous_index_end:previous_index_end+te_length[i]]
+            sample_size = te_length[i]
             gen_city = SiameseGenerator((city_im_pre, city_im_post), city_la, batch_size=BATCH_SIZE)
             city_auc = calculate_metrics(best_model, city, gen_city, city_la)
-            print(f"Test Set - Subgroup {city} - test_auc: {city_auc:.4f} \n")
-            f.write(f" - {city} - test_auc: {city_auc:.4f} \n")
+            print(f" - {city} - Sample size: {sample_size} - test_auc: {city_auc:.4f} \n")
+            f.write(f" - {city} - Sample size: {sample_size} - test_auc: {city_auc:.4f} \n")
 # --------
 f.close()
 #display plot

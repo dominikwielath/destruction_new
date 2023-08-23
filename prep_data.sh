@@ -5,6 +5,7 @@ source env/bin/activate
 # declare -a Cities=("aleppo" "daraa" "damascus" "deir-ez-zor" "hama" "homs" "idlib" "raqqa")
 # declare -a Cities=("aleppo" "daraa")
 declare -a Cities=("moschun" "volnovakha")
+# declare -a Cities=('hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha')
 # declare -a Cities=("raqqa")
 
 declare -a data_dir=$1
