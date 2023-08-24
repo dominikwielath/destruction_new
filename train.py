@@ -16,9 +16,9 @@ import shutil
 
 ## For local
 # CITIES = ['aleppo', 'daraa']
-#CITIES = ['moschun', 'volnovakha']
-#OUTPUT_DIR = "../../test/mwd/outputs"
-#DATA_DIR = "../../test/mwd/data"
+CITIES = ['moschun', 'volnovakha']
+OUTPUT_DIR = "../../test/mwd/outputs"
+DATA_DIR = "../../test/mwd/data"
 
 ## For artemisa
 #CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
@@ -27,10 +27,10 @@ import shutil
 
 ## For workstation
 # CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-CITIES = ['aleppo', 'hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha']
+#CITIES = ['aleppo', 'hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha']
 #CITIES = ['hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha']
-OUTPUT_DIR = "/media/andre/Samsung8TB/mwd-latest/outputs"
-DATA_DIR = "/media/andre/Samsung8TB/mwd-latest/data"
+#OUTPUT_DIR = "/media/andre/Samsung8TB/mwd-latest/outputs"
+#DATA_DIR = "/media/andre/Samsung8TB/mwd-latest/data"
 
 
 MODEL = "double"
@@ -41,12 +41,14 @@ parser.add_argument("--cities", help="Cities, comma separated. Eg: aleppo,raqqa,
 parser.add_argument("--model", help="One of snn, double")
 parser.add_argument("--output_dir", help="Output dir")
 parser.add_argument("--data_dir", help="Path to data dir")
+parser.add_argument("--runs_dir", help="Name of the grid search dir")
 
 parser.add_argument("--units", help="Units")
 parser.add_argument("--dropout", help="Dropout")
 parser.add_argument("--lr", help="Learning Rate")
 parser.add_argument("--filters", help="Number of filters")
 parser.add_argument("--batch_size", help="Batch Size")
+parser.add_argument("--run_id", help="Run ID")
 
 args = parser.parse_args()
 
@@ -64,7 +66,10 @@ if args.output_dir:
 if args.data_dir:
     DATA_DIR = args.data_dir
 
-
+if args.runs_dir:
+    RUNS_DIR = args.runs_dir 
+    
+    
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'
     return zarr.open(path)
@@ -110,15 +115,21 @@ def make_tuple_pair(n, step_size):
 
 Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 
-runs = [f for f in os.listdir(OUTPUT_DIR) if ".log" not in f]
-runs = [f for f in runs if ".DS_Store" not in f]
-run_id = len(runs)+1
+#runs = [f for f in os.listdir(OUTPUT_DIR) if ".log" not in f]
+#runs = [f for f in runs if ".DS_Store" not in f]
+#run_id = len(runs)+1
+
+if args.run_id:
+    run_id = int(args.run_id)
 
 print(f"\n\n### Run ID: {run_id} (use this code for dense_predict.py) \n\n")
 time.sleep(5)
 
-
-RUN_DIR = OUTPUT_DIR + f"/{run_id}"
+if args.runs_dir:
+    RUN_DIR = OUTPUT_DIR + f"/runs/{RUNS_DIR}/{run_id}"
+else:
+    RUN_DIR = OUTPUT_DIR + f"/runs/{'-'.join(CITIES)}/{run_id}"
+    
 TRAINING_DATA_DIR = OUTPUT_DIR + f"/data/{'-'.join(CITIES)}"
 Path(RUN_DIR).mkdir(parents=True, exist_ok=True)
 
