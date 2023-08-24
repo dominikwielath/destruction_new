@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Define output folder and cities 
-output_path="../../test/mwd/outputs" # !!! Stop before the "/runs" and "/data" subdirectories !!!
-data_path="../../test/mwd/data"
+output_path="/lustre/ific.uv.es/ml/iae091/outputs" # !!! Stop before the "/runs" and "/data" subdirectories !!!
+data_path="/lustre/ific.uv.es/ml/iae091/data/"
 
 # Provide the desired runs subdirectory name
-runs_subdirectory="moschun-volnovakha_1"
+runs_subdirectory="hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_1"
 
 
 

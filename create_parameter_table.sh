@@ -2,12 +2,12 @@
 
 
 # Define output folder, cities and parameters 
-output_path="../../test/mwd/outputs/runs/"
-declare -a Cities=("moschun" "volnovakha")
+output_path="/lustre/ific.uv.es/ml/iae091/outputs/runs"
+declare -a Cities=('hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha' 'aleppo' 'damascus' 'daraa' 'deirezzor' 'hama' 'homs' 'idlib' 'raqqa')
 
 declare -a Dropouts=("0.05" "0.10" "0.15")
 declare -a Units=("64" "128")
-declare -a Filters=("32" "64" "128")
+declare -a Filters=("64" "128")
 declare -a LearningRates=("0.00003" "0.0001")
 
 

@@ -548,8 +548,8 @@ MODEL_STORAGE_LOCATION = f"{RUN_DIR}/model"
 Path(MODEL_STORAGE_LOCATION).mkdir(parents=True)
 training_callbacks = [
     callbacks.EarlyStopping(monitor='val_auc', mode='max', patience=5, restore_best_weights=True),
-    callbacks.ModelCheckpoint(f'{MODEL_STORAGE_LOCATION}', monitor='val_auc', verbose=0, save_best_only=True, save_weights_only=False, mode='max'),
-    SubgroupValidationCallback(CITIES, va_length, im_va_pre, im_va_post, la_va)
+    callbacks.ModelCheckpoint(f'{MODEL_STORAGE_LOCATION}', monitor='val_auc', verbose=0, save_best_only=True, save_weights_only=False, mode='max')#,
+#    SubgroupValidationCallback(CITIES, va_length, im_va_pre, im_va_post, la_va)
 ]
 
 
@@ -676,7 +676,7 @@ ax.set_ylabel('Precision')
 ax.set_xlabel('Recall')
 f = open(f"{RUN_DIR}/metadata.txt", "a")
 f.write("\n\n######## Test set performance\n\n")
-f.write(f'Test Set AUC Score for the ROC Curve: {roc_auc_test} \nAverage precision:  {np.mean(precision)}')
+f.write(f'Test Set AUC Score for the ROC Curve: {roc_auc_test} \nAverage precision:  {np.mean(precision)}\n')
 print(f"""
     Test Set AUC Score for the ROC Curve: {roc_auc_test} 
     Average precision:  {np.mean(precision)}

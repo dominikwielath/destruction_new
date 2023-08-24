@@ -34,9 +34,9 @@ for city in city_names_test_auc:
     
 for dir in os.listdir(runs_dir):
     if dir.isdigit():
-        for file in os.listdir(runs_dir + dir):
+        for file in os.listdir(runs_dir + "/" + dir):
             if file == "metadata.txt":
-                fp = open(f"{runs_dir}{dir}/metadata.txt")
+                fp = open(f"{runs_dir}/{dir}/metadata.txt")
                 for i, line in enumerate(fp):
                 
                     if i == 2:
