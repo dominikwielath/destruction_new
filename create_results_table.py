@@ -3,12 +3,15 @@ import os
 import re
 import pandas as pd
 
+runs_dir = "/lustre/ific.uv.es/ml/iae091/outputs/runs/hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_1/"
+
 # Get the directory in which the runs are saved as input
 parser = argparse.ArgumentParser()
 parser.add_argument("--runs_dir", help="Run dir")
 args = parser.parse_args()
-assert args.runs_dir, "Run directory has to be provided of type .../runs/citya-cityb-cityc_x"
-runs_dir = args.runs_dir
+
+if args.runs_dir:
+	runs_dir = args.runs_dir
 print(f"\nThe provided directory containing the runs is: \n {runs_dir}\n")
 
 # Extract the city names from the directory name received
