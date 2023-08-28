@@ -12,7 +12,7 @@ runs_dir = args.runs_dir
 print(f"\nThe provided directory containing the runs is: \n {runs_dir}\n")
 
 # Extract the city names from the directory name received
-city_names = runs_dir.split("/")[-1].split("_")[0].split("-")
+city_names = runs_dir.split("/")[-2].split("_")[0].split("-")
 
 # Create column names including per-city AUC values and test sample sizes
 city_names_test_auc = [name + "_test_auc" for name in city_names]
@@ -109,12 +109,15 @@ for dir in os.listdir(runs_dir):
 						if i > 15:
 							match_city_auc = re.search(r'- ([\w]+) - Sample size: ([\d]+) - test_auc: ([\d.e-]+)', line)
 							if match_city_auc:
+															
 								city_auc_name = match_city_auc.group(1)
+								city_test_size = match_city_auc.group(2)
+								city_auc = match_city_auc.group(3)
+																
 								city_auc_name_column = city_auc_name + "_test_auc"
 								city_test_ss_name_column = city_auc_name + "_test_ss"
-								city_test_size = match_city_auc.group(2)
-								city_test_sample_size[city_test_ss_name_column].append(city_test_size)
-								city_auc = match_city_auc.group(3)
+								
+								city_test_sample_size[city_test_ss_name_column].append(city_test_size)								
 								city_test_aucs[city_auc_name_column].append(city_auc)                            
 
 					fp.close()
