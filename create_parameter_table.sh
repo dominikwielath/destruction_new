@@ -3,12 +3,12 @@
 
 # Define output folder, cities and parameters 
 # Artemisa
-# output_path="/lustre/ific.uv.es/ml/iae091/outputs/runs"
-# declare -a Cities=('hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha' 'aleppo' 'damascus' 'daraa' 'deirezzor' 'hama' 'homs' 'idlib' 'raqqa')
+output_path="/lustre/ific.uv.es/ml/iae091/outputs/runs"
+declare -a Cities=('hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha' 'aleppo' 'damascus' 'daraa' 'deirezzor' 'hama' 'homs' 'idlib' 'raqqa')
 
 # Work Station
-output_path="/media/andre/Samsung8TB/mwd-latest/outputs/runs"
-declare -a Cities=('aleppo' 'hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha')
+# output_path="/media/andre/Samsung8TB/mwd-latest/outputs/runs"
+# declare -a Cities=('aleppo' 'hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha')
 
 declare -a Dropouts=("0.05" "0.10" "0.15")
 declare -a Units=("64" "128")

@@ -2,14 +2,14 @@
 
 # Define output folder and cities (desired runs subdirectory name)
 # Artemisa
-# output_path="/lustre/ific.uv.es/ml/iae091/outputs" # !!! Stop before the "/runs" and "/data" subdirectories !!!
-# data_path="/lustre/ific.uv.es/ml/iae091/data/"
-# runs_subdirectory="hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_1"
+output_path="/lustre/ific.uv.es/ml/iae091/outputs" # !!! Stop before the "/runs" and "/data" subdirectories !!!
+data_path="/lustre/ific.uv.es/ml/iae091/data/"
+runs_subdirectory="hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_1"
 
 # Work Station 
-output_path="/media/andre/Samsung8TB/mwd-latest/outputs" # !!! Stop before the "/runs" and "/data" subdirectories !!!
-data_path="/media/andre/Samsung8TB/mwd-latest/data"
-runs_subdirectory="aleppo-hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha_1"
+# output_path="/media/andre/Samsung8TB/mwd-latest/outputs" # !!! Stop before the "/runs" and "/data" subdirectories !!!
+# data_path="/media/andre/Samsung8TB/mwd-latest/data"
+# runs_subdirectory="aleppo-hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha_1"
 
 
 

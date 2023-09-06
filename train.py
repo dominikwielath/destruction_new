@@ -16,21 +16,21 @@ import shutil
 
 ## For local
 # CITIES = ['aleppo', 'daraa']
-CITIES = ['moschun', 'volnovakha']
-OUTPUT_DIR = "../../test/mwd/outputs"
-DATA_DIR = "../../test/mwd/data"
+# CITIES = ['moschun', 'volnovakha']
+# OUTPUT_DIR = "../../test/mwd/outputs"
+# DATA_DIR = "../../test/mwd/data"
 
 ## For artemisa
-#CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-#OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
-#DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
+# CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+# OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
+# DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 
 ## For workstation
 # CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-#CITIES = ['aleppo', 'hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha']
-#CITIES = ['hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha']
-#OUTPUT_DIR = "/media/andre/Samsung8TB/mwd-latest/outputs"
-#DATA_DIR = "/media/andre/Samsung8TB/mwd-latest/data"
+# CITIES = ['aleppo', 'hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha']
+# CITIES = ['hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha']
+# OUTPUT_DIR = "/media/andre/Samsung8TB/mwd-latest/outputs"
+# DATA_DIR = "/media/andre/Samsung8TB/mwd-latest/data"
 
 
 MODEL = "double"
@@ -547,7 +547,7 @@ print("+++++++++", gen_tr.__len__())
 MODEL_STORAGE_LOCATION = f"{RUN_DIR}/model"
 Path(MODEL_STORAGE_LOCATION).mkdir(parents=True)
 training_callbacks = [
-    callbacks.EarlyStopping(monitor='val_auc', mode='max', patience=5, restore_best_weights=True),
+    callbacks.EarlyStopping(monitor='val_auc', mode='max', patience=2, restore_best_weights=True),
     callbacks.ModelCheckpoint(f'{MODEL_STORAGE_LOCATION}', monitor='val_auc', verbose=0, save_best_only=True, save_weights_only=False, mode='max')#,
 #    SubgroupValidationCallback(CITIES, va_length, im_va_pre, im_va_post, la_va)
 ]
