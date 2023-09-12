@@ -82,9 +82,9 @@ counter = 0
 for file_name in file_list:
     if re.match(pattern, file_name):
         if counter == 0:
-            predictions_all_cities = pd.read_csv(out_dir + file_name)
+            predictions_all_cities = pd.read_csv(OUTPUT_DIR + "/" + file_name)
         else:
-            predictions_this_city = pd.read_csv(out_dir + file_name)
+            predictions_this_city = pd.read_csv(OUTPUT_DIR + "/" + file_name)
             if (predictions_this_city.columns == predictions_all_cities.columns).all():
                 predictions_all_cities = pd.concat([predictions_all_cities, predictions_this_city])
             else:
