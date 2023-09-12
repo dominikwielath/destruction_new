@@ -36,10 +36,10 @@ parser.add_argument("--output_dir", help="Model Run ID for which we want to gene
 args = parser.parse_args()
 
 if args.data_dir:
-    OUTPUT_DIR = args.data_dir
+    DATA_DIR = args.data_dir
 
 if args.output_dir:
-    DATA_DIR = args.output_dir
+    OUTPUT_DIR = args.output_dir
 
 RUN_ID = int(args.run_id)
 RUN_DIR = f'{OUTPUT_DIR}/{RUN_ID}'
