@@ -1,6 +1,7 @@
 import argparse
 import os
 import re
+import pandas as pd
 parser = argparse.ArgumentParser()
 parser.add_argument("run_id", help="Model Run ID for which we want to generate predictions")
 parser.add_argument("--cities", help="Pre File")
@@ -73,3 +74,29 @@ for city in CITIES:
 
             os.system(f"python -m predict_chunk {args.run_id} {pre_} {post_} --data_dir {DATA_DIR} --output_dir {OUTPUT_DIR}")
 
+# Join files for all cities
+file_list = os.listdir(OUTPUT_DIR)
+pattern = r'predictions_[a-zA-Z]+\.csv'            
+
+counter = 0
+for file_name in file_list:
+    if re.match(pattern, file_name):
+        if counter == 0:
+            predictions_all_cities = pd.read_csv(out_dir + file_name)
+        else:
+            predictions_this_city = pd.read_csv(out_dir + file_name)
+            if (predictions_this_city.columns == predictions_all_cities.columns).all():
+                predictions_all_cities = pd.concat([predictions_all_cities, predictions_this_city])
+            else:
+                print(f"The columns in file {file_name} did not match with the columns in the other files!")
+        counter += 1
+        
+predictions_all_cities = predictions_all_cities.loc[predictions_all_cities["tr_va_te"] != "tr_va_te"]
+predictions_all_cities = predictions_all_cities.reset_index(drop=True)
+predictions_all_cities["tr_va_te"] = predictions_all_cities["tr_va_te"].astype(int)
+predictions_all_cities["y"] = predictions_all_cities["y"].astype(float)
+predictions_all_cities["yhat"] = predictions_all_cities["yhat"].astype(float)
+
+predictions_csv = f"{OUTPUT_DIR}/predictions_all_cities.csv"
+
+predictions_all_cities.to_csv(predictions_csv)
