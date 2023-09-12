@@ -151,9 +151,25 @@ def write_raster(array:np.ndarray, profile, destination:str, nodata:int=None, dt
         raster.write(array)
         raster.close()
 
+# Old function creating distortions
+#def tile_sequences(images:np.ndarray, tile_size:tuple=(128, 128)) -> np.ndarray:
+#    '''Converts images to sequences of tiles'''
+#    n_images, image_height, image_width, n_bands = images.shape
+#    tile_width, tile_height = tile_size
+#    assert image_width  % tile_width  == 0
+#    assert image_height % tile_height == 0
+#    n_tiles_width  = (image_width  // tile_width)
+#    n_tiles_height = (image_height // tile_height)
+#    sequence = images.reshape(n_images, n_tiles_width, tile_width, n_tiles_height, tile_height, n_bands)
+#    sequence = np.moveaxis(sequence.swapaxes(2, 3), 0, 2)
+#    sequence = sequence.reshape(-1, n_images, tile_width, tile_height, n_bands)
+#    return sequence
+
+
+# New function from the tile.py file
 def tile_sequences(images:np.ndarray, tile_size:tuple=(128, 128)) -> np.ndarray:
     '''Converts images to sequences of tiles'''
-    n_images, image_height, image_width, n_bands = images.shape
+    n_images, image_width, image_height, n_bands = images.shape
     tile_width, tile_height = tile_size
     assert image_width  % tile_width  == 0
     assert image_height % tile_height == 0
@@ -163,6 +179,8 @@ def tile_sequences(images:np.ndarray, tile_size:tuple=(128, 128)) -> np.ndarray:
     sequence = np.moveaxis(sequence.swapaxes(2, 3), 0, 2)
     sequence = sequence.reshape(-1, n_images, tile_width, tile_height, n_bands)
     return sequence
+    
+    
 
 
 def tiled_profile(source:str, tile_size:tuple=(*TILE_SIZE, 1)) -> dict:
@@ -192,6 +210,13 @@ pre_image_path  = args.pre_file
 post_image_path = args.post_file
 city = pre_image_path.split("/images/")[0].split("/")[-1]
 
+# -----
+# Get the path to the raster containing information about the train val test split
+train_val_test_raster_path = DATA_DIR + "others/" + city +"_samples.tif"
+train_val_test_raster = read_raster(train_val_test_raster_path)
+train_val_test_raster = np.squeeze(train_val_test_raster)
+# -----
+
 pre_image_date = pre_image_path.split("/")[-1].split("image_")[1].split(".tif")[0].replace("_", "-")
 post_image_date = post_image_path.split("/")[-1].split("image_")[1].split(".tif")[0].replace("_", "-")
 
@@ -220,7 +245,7 @@ predictions['yhat'] = yhat.flatten().tolist()
 predictions['pre'] = pre_image_date
 predictions['post'] = post_image_date
 predictions['city'] = city
-
+predictions['tr_va_te'] = train_val_test_raster
 
 predictions_csv = f"{RUN_DIR}/predictions_{city}.csv"
 print(predictions_csv)
