@@ -212,9 +212,10 @@ city = pre_image_path.split("/images/")[0].split("/")[-1]
 
 # -----
 # Get the path to the raster containing information about the train val test split
-train_val_test_raster_path = DATA_DIR + "others/" + city +"_samples.tif"
+train_val_test_raster_path = f"{DATA_DIR}/{city}/others/{city}_samples.tif"
 train_val_test_raster = read_raster(train_val_test_raster_path)
 train_val_test_raster = np.squeeze(train_val_test_raster)
+flat_train_val_test_raster = [element for row in train_val_test_raster for element in row]
 # -----
 
 pre_image_date = pre_image_path.split("/")[-1].split("image_")[1].split(".tif")[0].replace("_", "-")
@@ -245,7 +246,7 @@ predictions['yhat'] = yhat.flatten().tolist()
 predictions['pre'] = pre_image_date
 predictions['post'] = post_image_date
 predictions['city'] = city
-predictions['tr_va_te'] = train_val_test_raster
+predictions['tr_va_te'] = flat_train_val_test_raster
 
 predictions_csv = f"{RUN_DIR}/predictions_{city}.csv"
 print(predictions_csv)
