@@ -19,22 +19,22 @@ python -m predict 3 aleppo,daraa
 # OUTPUT_DIR = "../data/destr_outputs"
 # DATA_DIR = "../data/destr_data"
 
-## For artemisa
-# CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-# OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
-# DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
-
-## For workstation
+# For artemisa
 CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-OUTPUT_DIR = "../outputs"
-DATA_DIR = "../data"
+OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
+DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
+
+# ## For workstation
+# CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+# OUTPUT_DIR = "../outputs"
+# DATA_DIR = "../data"
 
 
 if args.data_dir:
-    OUTPUT_DIR = args.output_dir
+    OUTPUT_DIR = args.data_dir
 
 if args.output_dir:
-    DATA_DIR = args.data_dir
+    DATA_DIR = args.output_dir
 
 if args.cities:
     CITIES = [el.strip() for el in args.cities.split(",")]
