@@ -69,6 +69,7 @@ for i, bl in enumerate(blocks):
         
 pos = sorted(pos)
 neg = labels.shape[0] - len(pos)
+print(pos, neg)
 add = random.choices(pos, k=(neg - len(pos)))
 add = sorted(add)
 
@@ -101,3 +102,4 @@ f.write(f"Training set: {tr_pre.shape[0]} observations\n")
 f.write(f"Validation set: {va_pre.shape[0]} observations\n")
 f.write(f"Test set: {te_pre.shape[0]} observations\n\n")
 f.close()
+
