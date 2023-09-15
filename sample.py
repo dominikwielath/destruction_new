@@ -91,6 +91,12 @@ def write_raster(array:np.ndarray, profile, destination:str, nodata:int=None, dt
         raster.close()
 
 
+f = open(f"{DATA_DIR}/{CITY}/others/metadata.txt", "a")
+
+def print_w(text):
+    f.write(f"{text}\n")
+    print(text)
+
 # Generate samples if REFRESH_SAMPLES=True
 if REFRESH_SAMPLE:
     # Splits samples
@@ -99,5 +105,6 @@ if REFRESH_SAMPLE:
     index   = np.random.choice(np.arange(len(index)) + 1, np.sum(analysis), p=list(index.values()))
     samples = analysis.astype(int)
     np.place(samples, analysis, index)
+    print_w(f"\tSample Dimensions: \t\t\t {samples.shape}")
     write_raster(samples, profile, f'{DATA_DIR}/{CITY}/others/{CITY}_samples.tif', nodata=-1, dtype='int8')
     del index, samples, analysis

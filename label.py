@@ -107,6 +107,9 @@ def print_w(text):
     f.write(f"{text}\n")
     print(text)
 
+f.write("\n\n######## Labeling Step\n\n")
+
+
 image      = search_data(pattern(city=CITY, type='image'), directory=DATA_DIR)[0]
 profile    = tiled_profile(image, tile_size=(*TILE_SIZE, 1))
 
@@ -141,7 +144,6 @@ damage[pre_cols] = 0.0
 
 
 
-f.write("\n\n######## Labeling Step\n\n")
 # f.write(f"Using {pre_cols} as pre-dates\n")
 
 post_cols = sorted([col for col in damage.drop('geometry', axis=1).columns if col not in pre_cols])
@@ -165,7 +167,8 @@ damage = damage_full[[*columns_until_last_annotation_date, 'geometry']]
 
 # Corrected label assignment
 geom = damage['geometry']
-print_w(f"\tTotal coordinates: \t\t\t {[len(damage)]}")
+t = len(damage)
+print_w(f"\tTotal annotations: \t\t\t {t}")
 damage = damage.drop('geometry', axis=1).T
 for col in damage.columns:
     unc = np.where(damage[col].fillna(method='ffill') != damage[col].fillna(method='bfill'))
@@ -173,6 +176,8 @@ for col in damage.columns:
         print_w(f"\t\tProcessing annotations: \t {col} annotations processed")
     for i in unc:
         damage[col][i] = -1
+print_w(f"\t\tProcessing annotations: \t {t} annotations processed")
+
 
 for col in damage.columns:
     damage[col] = damage[col].fillna(method='ffill')

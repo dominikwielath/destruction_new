@@ -14,7 +14,7 @@ import time
 import shutil
 
 # For local
-CITIES = ['aleppo']
+CITIES = ['aleppo', 'daraa']
 OUTPUT_DIR = "../data/destr_outputs"
 DATA_DIR = "../data/destr_data"
 

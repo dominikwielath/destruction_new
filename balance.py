@@ -94,19 +94,19 @@ def print_w(text):
 
 f.write("\n\n######## Balancing Step\n\n")
 
-print_w(f"\tTotal images: \t\t\t\t {labels.shape[0]}")
-print_w(f"\tNegatives: \t\t\t\t {neg}")
-print_w(f"\tPositives: \t\t\t\t {len(pos)}")
-print_w(f"\tAdded: \t\t\t\t\t {len(add)} negatives")
+print_w(f"\tTotal tr images: \t\t\t {labels.shape[0]}")
+print_w(f"\t\tNegatives: \t\t\t {neg}")
+print_w(f"\t\tPositives: \t\t\t {len(pos)}")
+print_w(f"\t\tAdded: \t\t\t\t {len(add)} negatives")
 labels = read_zarr(CITY, 'la_tr', DATA_DIR)
-print_w(f"\tNew training size:\t\t\t {labels.shape[0]}")
+print_w(f"\tNew tr size:\t\t\t\t {labels.shape[0]}")
 
 tr_pre = read_zarr(CITY, "im_tr_pre", DATA_DIR)
 va_pre = read_zarr(CITY, "im_va_pre", DATA_DIR)
 te_pre = read_zarr(CITY, "im_te_pre", DATA_DIR)
 
-print_w(f"\tTraining set: \t\t\t\t {tr_pre.shape[0]} observations")
-print_w(f"\tValidation set: \t\t\t {va_pre.shape[0]} observations")
-print_w(f"\tTest set: \t\t\t\t {te_pre.shape[0]} observations")
+# print_w(f"\tTraining set: \t\t\t\t {tr_pre.shape[0]} observations")
+# print_w(f"\tValidation set: \t\t\t {va_pre.shape[0]} observations")
+# print_w(f"\tTest set: \t\t\t\t {te_pre.shape[0]} observations")
 f.close()
 
