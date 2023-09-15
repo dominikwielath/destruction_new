@@ -5,7 +5,6 @@ import math
 import numpy as np
 from tensorflow.keras import backend, layers, models, callbacks, metrics
 from tensorflow.keras.utils import Sequence
-from tensorflow.keras.callbacks import Callback
 import random
 import tensorflow as tf
 from keras.models import load_model
@@ -14,25 +13,20 @@ import matplotlib.pyplot as plt
 import time
 import shutil
 
-## For local
-# CITIES = ['aleppo', 'daraa']
-# CITIES = ['moschun', 'volnovakha']
-# OUTPUT_DIR = "../../test/mwd/outputs"
-# DATA_DIR = "../../test/mwd/data"
+# For local
+CITIES = ['aleppo']
+OUTPUT_DIR = "../data/destr_outputs"
+DATA_DIR = "../data/destr_data"
 
-## For artemisa
+# ## For artemisa
 # CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
 # OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
 # DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 
 ## For workstation
 # CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-# CITIES = ['aleppo', 'hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha']
-# CITIES = ['hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha']
-# OUTPUT_DIR = "/media/andre/Samsung8TB/mwd-latest/outputs"
-# DATA_DIR = "/media/andre/Samsung8TB/mwd-latest/data"
-
-
+# OUTPUT_DIR = "../outputs"
+# DATA_DIR = "../data"
 MODEL = "double"
 
 import argparse
@@ -41,14 +35,12 @@ parser.add_argument("--cities", help="Cities, comma separated. Eg: aleppo,raqqa,
 parser.add_argument("--model", help="One of snn, double")
 parser.add_argument("--output_dir", help="Output dir")
 parser.add_argument("--data_dir", help="Path to data dir")
-parser.add_argument("--runs_dir", help="Name of the grid search dir")
 
 parser.add_argument("--units", help="Units")
 parser.add_argument("--dropout", help="Dropout")
 parser.add_argument("--lr", help="Learning Rate")
 parser.add_argument("--filters", help="Number of filters")
 parser.add_argument("--batch_size", help="Batch Size")
-parser.add_argument("--run_id", help="Run ID")
 
 args = parser.parse_args()
 
@@ -66,10 +58,7 @@ if args.output_dir:
 if args.data_dir:
     DATA_DIR = args.data_dir
 
-if args.runs_dir:
-    RUNS_DIR = args.runs_dir 
-    
-    
+
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'
     return zarr.open(path)
@@ -115,21 +104,15 @@ def make_tuple_pair(n, step_size):
 
 Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 
-#runs = [f for f in os.listdir(OUTPUT_DIR) if ".log" not in f]
-#runs = [f for f in runs if ".DS_Store" not in f]
-#run_id = len(runs)+1
+runs = [f for f in os.listdir(OUTPUT_DIR) if ".log" not in f]
+runs = [f for f in runs if ".DS_Store" not in f]
+run_id = len(runs)+1
 
-if args.run_id:
-    run_id = int(args.run_id)
-
-# print((f"\n\n### Run ID: {run_id} (use this code for dense_predict.py) \n\n")
+print(f"\n\n### Run ID: {run_id} (use this code for dense_predict.py) \n\n")
 time.sleep(5)
 
-if args.runs_dir:
-    RUN_DIR = OUTPUT_DIR + f"/runs/{RUNS_DIR}/{run_id}"
-else:
-    RUN_DIR = OUTPUT_DIR + f"/runs/{'-'.join(CITIES)}/{run_id}"
-    
+
+RUN_DIR = OUTPUT_DIR + f"/{run_id}"
 TRAINING_DATA_DIR = OUTPUT_DIR + f"/data/{'-'.join(CITIES)}"
 Path(RUN_DIR).mkdir(parents=True, exist_ok=True)
 
@@ -179,27 +162,8 @@ def shuffle(old="tr", new="tr_sfl", delete_old=False, block_size = 5000):
 # im_va_post = None
 # la_va = None
 
-im_va_pre_length = []
-im_va_post_length = []
-la_va_length = []
-
-im_te_pre_length = []
-im_te_post_length = []
-la_te_length = []
-
 if os.path.exists(TRAINING_DATA_DIR):
-    # print((f"Data already generated and available at: {TRAINING_DATA_DIR}")
-    
-    fp = open(f"{TRAINING_DATA_DIR}/metadata.txt")
-    for i, line in enumerate(fp):
-        if i == 4:
-            va_length = line.split("[")[-1].split("]")[0].replace("'", "").split(", ")
-        if i == 7:
-            te_length = line.split("[")[-1].split("]")[0].replace("'", "").split(", ")
-        if i > 10:
-            break
-    fp.close()
-    
+    print(f"Data already generated and available at: {TRAINING_DATA_DIR}")
 else:
     Path(TRAINING_DATA_DIR).mkdir(parents=True, exist_ok=True)      
     for city in CITIES:
@@ -210,21 +174,12 @@ else:
         im_va_pre = read_zarr(city, "im_va_pre", DATA_DIR)
         im_va_post = read_zarr(city, "im_va_post", DATA_DIR)
         la_va = read_zarr(city, "la_va", DATA_DIR)
-	
+
         im_te_pre = read_zarr(city, "im_te_pre", DATA_DIR)
         im_te_post = read_zarr(city, "im_te_post", DATA_DIR)
         la_te = read_zarr(city, "la_te", DATA_DIR)
 
-        im_va_pre_length.append(im_va_pre.shape[0])
-        im_va_post_length.append(im_va_post.shape[0])
-        la_va_length.append(la_va.shape[0])
-     
-        im_te_pre_length.append(im_te_pre.shape[0])
-        im_te_post_length.append(im_te_post.shape[0])
-        la_te_length.append(la_te.shape[0])
-        
         # print((f"{city}-tr_pre",im_tr_pre)
-        
         steps = make_tuple_pair(im_tr_pre.shape[0], 100000) 
         for i, st in enumerate(steps):
             _im_tr_pre = im_tr_pre[st[0]:st[1]]
@@ -269,21 +224,6 @@ else:
     shuffle(old="tr", new="tr_sfl", delete_old=True, block_size=5000)
     shuffle(old="tr_sfl", new="tr", delete_old=True, block_size=5000*5)
 
-    f = open(f"{TRAINING_DATA_DIR}/metadata.txt", "a")
-    f.write(f"\n\n######## Cities: {CITIES} \n\n")
-    f.write(f"Validation Set pre length: {im_va_pre_length} \n")
-    f.write(f"Validation Set post length: {im_va_post_length} \n")
-    f.write(f"Validation Set label length: {la_va_length} \n")
-    f.write(f"Test Set pre length: {im_te_pre_length} \n")
-    f.write(f"Test Set post length: {im_te_post_length} \n")
-    f.write(f"Test Set label length: {la_te_length} \n")
-    f.close()
-    
-    va_length = im_va_pre_length
-    te_length = im_te_pre_length
-
-va_length = [int(length) for length in va_length]
-te_length = [int(length) for length in te_length]
 
 def save_img(pre, post, labels, filename):
     random_index = random.randint(0,pre.shape[0] - 10)
@@ -309,6 +249,7 @@ la_va = zarr.open(f"{TRAINING_DATA_DIR}/la_va.zarr")
 im_te_pre = zarr.open(f"{TRAINING_DATA_DIR}/im_te_pre.zarr")
 im_te_post = zarr.open(f"{TRAINING_DATA_DIR}/im_te_post.zarr")
 la_te = zarr.open(f"{TRAINING_DATA_DIR}/la_te.zarr")
+
 
 f = open(f"{RUN_DIR}/metadata.txt", "a")
 f.write(f"\n\n######## Run {run_id}: {CITIES} \n\n")
@@ -351,6 +292,18 @@ def convolution_block(inputs, filters:int, dropout:float, name:str):
     tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
     return tensor
 
+# def convolution_block(inputs, filters:int, dropout:float, name:str, n=1):
+#     for i in range(n):
+#         if i==0:
+#             tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(inputs)
+#         else:
+#             tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(tensor)
+#         tensor = layers.Activation('relu', name=f'{name}_activation{i+1}')(tensor)
+#         tensor = layers.BatchNormalization(name=f'{name}_normalisation{i+1}')(tensor)
+#         tensor = layers.MaxPooling2D(pool_size=(2, 2), name=f'{name}_pooling{i+1}')(tensor)
+#         tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout{i+1}')(tensor)
+#     return tensor
+
 def distance_layer(inputs):
     input0, input1 = inputs
     distances = tf.math.reduce_sum(tf.math.square(input0 - input1), axis=1, keepdims=True)
@@ -359,12 +312,13 @@ def distance_layer(inputs):
 
 
 
+
 def encoder_block_separated(inputs, filters:int=1, dropout=0, n=1, name:str=''):	
     tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, name=f'{name}_block1')	
     tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, name=f'{name}_block2')	
-    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name=f'{name}_block3')	
-    tensor  = convolution_block(tensor, filters=filters*8, dropout=dropout, name=f'{name}_block4')	
-    tensor  = convolution_block(tensor, filters=filters*16, dropout=dropout, name=f'{name}_block5')	
+    tensor  = convolution_block(tensor, filters=filters*3, dropout=dropout, name=f'{name}_block3')	
+    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name=f'{name}_block4')	
+    tensor  = convolution_block(tensor, filters=filters*5, dropout=dropout, name=f'{name}_block5')	
     outputs = layers.Flatten(name=f'{name}_flatten')(tensor)	
     return outputs
 
@@ -372,9 +326,9 @@ def encoder_block_shared(shape:tuple, filters:int=1, n=1, dropout=0):
     inputs  = layers.Input(shape=shape, name='inputs')	
     tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, name='block1')	
     tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, name='block2')	
-    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name='block3')	
-    tensor  = convolution_block(tensor, filters=filters*8, dropout=dropout, name='block4')	
-    tensor  = convolution_block(tensor, filters=filters*16, dropout=dropout, name='block5')	
+    tensor  = convolution_block(tensor, filters=filters*3, dropout=dropout, name='block3')	
+    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name='block4')	
+    tensor  = convolution_block(tensor, filters=filters*5, dropout=dropout, name='block5')	
     outputs = layers.GlobalAveragePooling2D(name='global_pooling')(tensor)	
     encoder = models.Model(inputs=inputs, outputs=outputs, name='encoder')	
     return encoder
@@ -471,6 +425,9 @@ class SiameseGenerator(Sequence):
 gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr, batch_size=BATCH_SIZE)
 gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va, batch_size=BATCH_SIZE)
 
+
+# print((gen_tr.__getitem__(10))
+
 indices = np.random.randint(0, im_tr_pre.shape[0]//32, 5)
 
 for j, ind in enumerate(indices):
@@ -486,58 +443,12 @@ for j, ind in enumerate(indices):
     plt.savefig(f"{RUN_DIR}/traing_data_samples_{j+1}.png")
 
 
-
-#----------------------------- Dominik 14.08.2023
-
-class SubgroupValidationCallback(Callback):
-    def __init__(self, cities, length_list, im_pre, im_post, la):
-        super().__init__()
-        self.cities = cities
-        self.length_list = length_list
-        self.im_pre = im_pre
-        self.im_post = im_post
-        self.la = la
-
-    def calculate_metrics(self, city, gen_city, city_la):
-        yhat_proba_city = self.model.predict(gen_city)
-        yhat_proba_city = np.squeeze(yhat_proba_city)
-        y_city = np.squeeze(city_la[0:(len(city_la)//BATCH_SIZE)*BATCH_SIZE])
-        roc_auc_test_city = roc_auc_score(y_city, yhat_proba_city)
-        return roc_auc_test_city
-
-    def on_epoch_end(self, epoch, logs=None):
-        # Calculate and # print( validation metrics for subgroups
-        for i, city in enumerate(self.cities):
-            if i == 0:
-            	city_im_pre = self.im_pre[:self.length_list[i],:,:,:]
-            	city_im_post = self.im_post[:self.length_list[i],:,:,:]
-            	city_la = self.la[:self.length_list[i]]
-            	# print((0, self.length_list[i])
-            else:
-                previous_index_end = 0
-                for j in range(i):
-            	    previous_index_end += self.length_list[j]
-                # print((previous_index_end, previous_index_end+self.length_list[i])
-                city_im_pre = self.im_pre[previous_index_end:previous_index_end+self.length_list[i],:,:,:]
-                city_im_post = self.im_post[previous_index_end:previous_index_end+self.length_list[i],:,:,:]
-                city_la = self.la[previous_index_end:previous_index_end+self.length_list[i]]
-                        
-            gen_city = SiameseGenerator((city_im_pre, city_im_post), city_la, batch_size=BATCH_SIZE)
-            
-            city_auc = self.calculate_metrics(city, gen_city, city_la)
-            # print((f"Epoch {epoch + 1} - Subgroup {city} - val_auc: {city_auc:.4f} \n")
-
-# ------------------------------
-
-# print((im_va_pre.shape)
-
 # print(("+++++++++", gen_tr.__len__())
 MODEL_STORAGE_LOCATION = f"{RUN_DIR}/model"
 Path(MODEL_STORAGE_LOCATION).mkdir(parents=True)
 training_callbacks = [
-    callbacks.EarlyStopping(monitor='val_auc', mode='max', patience=2, restore_best_weights=True),
-    callbacks.ModelCheckpoint(f'{MODEL_STORAGE_LOCATION}', monitor='val_auc', verbose=0, save_best_only=True, save_weights_only=False, mode='max')#,
-#    SubgroupValidationCallback(CITIES, va_length, im_va_pre, im_va_post, la_va)
+    callbacks.EarlyStopping(monitor='val_auc', patience=5, restore_best_weights=True),
+    callbacks.ModelCheckpoint(f'{MODEL_STORAGE_LOCATION}', monitor='val_auc', verbose=0, save_best_only=True, save_weights_only=False, mode='max')
 ]
 
 
@@ -563,7 +474,7 @@ if args.dropout:
 args  = dict(filters=filters, dropout=dropout, units=units) # ! Check parameters before run
 args_dense  = dict(units=units, dropout=dropout)
 parameters = f'batch_size={BATCH_SIZE} filters={filters}, dropout={np.round(dropout, 4)}, epochs={epochs}, units={units}, learning_rate={lr}'
-print(parameters)
+# print((parameters)
 f = open(f"{RUN_DIR}/metadata.txt", "a")
 f.write(f"\n######## Run parameters \n\n{parameters}")
 f.close()
@@ -614,8 +525,8 @@ try:
     verbose=1,
     callbacks=training_callbacks)
 except:
-  # print(("## Model training stopped, generating numbers on best model so far..")
-  # print(("## Please wait, the program will terminate automatically..")
+  print("## Model training stopped, generating numbers on best model so far..")
+  print("## Please wait, the program will terminate automatically..")
 # Train model on dataset
 
 
@@ -638,13 +549,6 @@ def plot_training(H):
 if history:
     plot_training(history)
 
-def calculate_metrics(best_model, city, gen_city, city_la):
-    yhat_proba_city = best_model.predict(gen_city)
-    yhat_proba_city = np.squeeze(yhat_proba_city)
-    y_city = np.squeeze(city_la[0:(len(city_la)//BATCH_SIZE)*BATCH_SIZE])
-    roc_auc_test_city = roc_auc_score(y_city, yhat_proba_city)
-    return roc_auc_test_city
-
 # model_path = f'{MODEL_DIR}/{CITY}/snn/run_{i}'
 best_model = load_model(MODEL_STORAGE_LOCATION, custom_objects={'auc':metrics.AUC(num_thresholds=200, curve='ROC', name='auc')})
 gen_te= SiameseGenerator((im_te_pre, im_te_post), la_te, train=False)
@@ -664,32 +568,12 @@ ax.set_ylabel('Precision')
 ax.set_xlabel('Recall')
 f = open(f"{RUN_DIR}/metadata.txt", "a")
 f.write("\n\n######## Test set performance\n\n")
-f.write(f'Test Set AUC Score for the ROC Curve: {roc_auc_test} \nAverage precision:  {np.mean(precision)}\n')
-# print((f"""
+f.write(f'Test Set AUC Score for the ROC Curve: {roc_auc_test} \nAverage precision:  {np.mean(precision)}')
+print(f"""
     Test Set AUC Score for the ROC Curve: {roc_auc_test} 
     Average precision:  {np.mean(precision)}
     Parameters: {parameters}
 """)
-# ------------------------------------ Dominik 14.08.2023
-# print((f"\n \n")
-for i, city in enumerate(CITIES):
-            if i == 0:
-            	city_im_pre = im_te_pre[:te_length[i],:,:,:]
-            	city_im_post = im_te_post[:te_length[i],:,:,:]
-            	city_la = la_te[:te_length[i]]
-            else:
-                previous_index_end = 0
-                for j in range(i):
-            	    previous_index_end += te_length[j]
-                city_im_pre = im_te_pre[previous_index_end:previous_index_end+te_length[i],:,:,:]
-                city_im_post = im_te_post[previous_index_end:previous_index_end+te_length[i],:,:,:]
-                city_la = la_te[previous_index_end:previous_index_end+te_length[i]]
-            sample_size = te_length[i]
-            gen_city = SiameseGenerator((city_im_pre, city_im_post), city_la, batch_size=BATCH_SIZE)
-            city_auc = calculate_metrics(best_model, city, gen_city, city_la)
-            # print((f" - {city} - Sample size: {sample_size} - test_auc: {city_auc:.4f} \n")
-            f.write(f" - {city} - Sample size: {sample_size} - test_auc: {city_auc:.4f} \n")
-# --------
 f.close()
 #display plot
 plt.savefig(f"{RUN_DIR}/pr_curve.png")
@@ -705,6 +589,7 @@ delete_zarr_if_exists(f"{RUN_DIR}/la_va.zarr")
 delete_zarr_if_exists(f"{RUN_DIR}/im_te_pre.zarr")
 delete_zarr_if_exists(f"{RUN_DIR}/im_te_post.zarr")
 delete_zarr_if_exists(f"{RUN_DIR}/la_te.zarr")
+
 
 
 

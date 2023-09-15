@@ -5,7 +5,11 @@ import os
 import re
 import geopandas
 import time
+from datetime import datetime
+import pandas as pd
+from collections import OrderedDict
 
+pd.options.mode.chained_assignment = None  # default='warn'
 
 CITY = "raqqa"
 DATA_DIR = "../data"
@@ -96,6 +100,13 @@ def tiled_profile(source:str, tile_size:tuple=(128,128,1)) -> dict:
     profile.update(width=profile['width'] // tile_size[0], height=profile['height'] // tile_size[0], count=tile_size[2], transform=affine)
     return profile
 
+
+f = open(f"{DATA_DIR}/{CITY}/others/metadata.txt", "a")
+
+def print_w(text):
+    f.write(f"{text}\n")
+    print(text)
+
 image      = search_data(pattern(city=CITY, type='image'), directory=DATA_DIR)[0]
 profile    = tiled_profile(image, tile_size=(*TILE_SIZE, 1))
 
@@ -111,39 +122,55 @@ dates = list(map(lambda x: x.replace("_", "-"), dates))
 
 # add additional date columns
 known_dates = sorted(damage.drop('geometry', axis =1).columns)
+known_dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d'))
+
+print_w(f"\tDates with annotations: \t\t {known_dates}")
+print_w(f"\tMost recent date with annotations: \t {[last_annotation_date]}")
+
 damage[list(set(dates) - set(damage.columns))] = np.nan
-damage = damage.reindex(sorted(damage.columns), axis=1)
+damage_columns = list(sorted(damage.columns))[:-1]
+damage_columns.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d'))
+damage_columns.append("geometry")
+damage = damage.reindex(damage_columns, axis=1)
 
 # Set pre cols to 0
-# pre_cols = [col for col in sorted(damage.drop('geometry', axis=1).columns) if int(col.split("-")[0]) < ZERO_DAMAGE_BEFORE_YEAR]
 pre_cols = []
 pre_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{CITY}/images/pre')
 pre_cols = [f.split("image_")[1].split(".tif")[0].replace("_", "-") for f in pre_images]
-
-# for i, col in enumerate(sorted(damage.drop('geometry', axis=1).columns)):
-#     if col not in pre_cols:
-#         pre_cols.append(col)
-
 damage[pre_cols] = 0.0
 
-f = open(f"{DATA_DIR}/{CITY}/others/metadata.txt", "a")
+
 
 f.write("\n\n######## Labeling Step\n\n")
-f.write(f"Using {pre_cols} as pre-dates\n")
+# f.write(f"Using {pre_cols} as pre-dates\n")
 
-# Get post cols
 post_cols = sorted([col for col in damage.drop('geometry', axis=1).columns if col not in pre_cols])
-f.write(f"Considering {post_cols} as post-dates")
+post_cols.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d'))
+
+
+index_last_annotation_date = list(damage.columns).index(last_annotation_date)
+columns_after_last_annotation_date = damage.columns[index_last_annotation_date+1:]
+if len(columns_after_last_annotation_date != 1):
+    columns_after_last_annotation_date = list(columns_after_last_annotation_date[:-1])
+columns_until_last_annotation_date = damage.columns[0: index_last_annotation_date]
+columns_until_last_annotation_date = list(damage.columns[0: index_last_annotation_date+1])
+
+print_w(f"\tColumns until last annotation date: \t {columns_until_last_annotation_date}")
+print_w(f"\tColumns after last annotation date: \t {columns_after_last_annotation_date}")
+
+
+damage_full = damage.copy()
+damage = damage_full[[*columns_until_last_annotation_date, 'geometry']]
 
 
 # Corrected label assignment
 geom = damage['geometry']
+print_w(f"\tTotal coordinates: \t\t\t {[len(damage)]}")
 damage = damage.drop('geometry', axis=1).T
 for col in damage.columns:
     unc = np.where(damage[col].fillna(method='ffill') != damage[col].fillna(method='bfill'))
-    if int(col)%1000 == 0:
-        print(col)
-
+    if int(col)%3000 == 0 and int(col) !=0:
+        print_w(f"\t\tProcessing annotations: \t {col} annotations processed")
     for i in unc:
         damage[col][i] = -1
 
@@ -154,10 +181,22 @@ damage = damage.T
 damage['geometry'] = geom
 damage = damage
 
+damage_after = damage_full[[last_annotation_date, *columns_after_last_annotation_date, 'geometry']]
+for col in columns_after_last_annotation_date:
+    damage_after[col] = np.where(damage_after[last_annotation_date] == 0.0, -1, damage_after[last_annotation_date]) * 1.0
+
+damage.is_copy = None
+damage_after.is_copy = None
+final = pd.concat([damage,damage_after[columns_after_last_annotation_date]], axis=1)
+
 # Writes damage labels
-for date in damage.drop('geometry', axis=1).columns:
-    print(f'------ {date}')
-    subset = damage[[date, 'geometry']].sort_values(by=date) # Sorting takes the max per pixel
+print_w(f"\tDatewise breakdown:")
+
+for date in final.drop('geometry', axis=1).columns:
+    subset = final[[date, 'geometry']].sort_values(by=date) # Sorting takes the max per pixel
+    counts = subset[date].value_counts().to_dict()
+    counts = dict(OrderedDict(sorted(counts.items())))
+    print_w(f"\t\t{date}{' (gt):' if date in known_dates else ':    '} \t\t {counts}")
     subset[date] = np.where((subset[date] == -1.0) , 99.0, subset[date])
     subset[date] = np.where((subset[date] < 3), 0.0, subset[date])
     subset[date] = np.where((subset[date] == 3), 1.0, subset[date])

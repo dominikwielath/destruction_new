@@ -14,15 +14,15 @@ python -m predict 3 aleppo,daraa
 """
 
 
-## For local
-# CITIES = ['aleppo', 'daraa']
-# OUTPUT_DIR = "../data/destr_outputs"
-# DATA_DIR = "../data/destr_data"
+# For local
+CITIES = ['aleppo', 'daraa']
+OUTPUT_DIR = "../data/destr_outputs"
+DATA_DIR = "../data/destr_data"
 
 # For artemisa
-CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
-DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
+# CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+# OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
+# DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 
 # ## For workstation
 # CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
@@ -31,10 +31,10 @@ DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 
 
 if args.data_dir:
-    OUTPUT_DIR = args.data_dir
+    DATA_DIR = args.data_dir
 
 if args.output_dir:
-    DATA_DIR = args.output_dir
+    OUTPUT_DIR = args.output_dir
 
 if args.cities:
     CITIES = [el.strip() for el in args.cities.split(",")]
@@ -59,7 +59,7 @@ def search_data(pattern:str='.*', directory:str='../data') -> list:
 for city in CITIES:
 
     if os.path.exists(f"{RUN_DIR}/predictions_{city}.csv"):
-        print("File already exists!")
+        # print(("File already exists!")
         os.remove(f"{RUN_DIR}/predictions_{city}.csv")
 
     pre_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{city}/images/pre')
@@ -68,7 +68,7 @@ for city in CITIES:
 
     for pre_ in pre_images:
         for post_ in post_images:
-            print(city, "-", pre_.split("/")[-1], post_.split("/")[-1])
+            # print((city, "-", pre_.split("/")[-1], post_.split("/")[-1])
 
             os.system(f"python -m predict_chunk {args.run_id} {pre_} {post_} --data_dir {DATA_DIR} --output_dir {OUTPUT_DIR}")
 

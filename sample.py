@@ -68,9 +68,6 @@ image      = search_data(pattern(city=CITY, type='image'), directory=DATA_DIR)[0
 settlement = search_data(f'{CITY}_settlement.*gpkg$', directory=DATA_DIR)
 noanalysis = search_data(f'{CITY}_noanalysis.*gpkg$', directory=DATA_DIR)
 
-print(image)
-print(settlement)
-print(noanalysis)
 
 profile    = tiled_profile(image, tile_size=(*TILE_SIZE, 1))
 settlement = rasterise(settlement, profile, dtype='bool')

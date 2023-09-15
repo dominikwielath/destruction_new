@@ -17,6 +17,7 @@ import re
 import pandas as pd
 import gc
 import shutil
+import time
 
 
 OUTPUT_DIR = "../data/destr_outputs"
@@ -36,22 +37,22 @@ parser.add_argument("--output_dir", help="Model Run ID for which we want to gene
 args = parser.parse_args()
 
 if args.data_dir:
-    OUTPUT_DIR = args.data_dir
+    DATA_DIR = args.data_dir
 
 if args.output_dir:
-    DATA_DIR = args.output_dir
+    OUTPUT_DIR = args.output_dir
 
 RUN_ID = int(args.run_id)
 RUN_DIR = f'{OUTPUT_DIR}/{RUN_ID}'
 MODEL_PATH = f'{RUN_DIR}/model'
 PRED_DIR = f'{OUTPUT_DIR}/{RUN_ID}/predictions'
-SAVE_RASTER = False
+SAVE_RASTER = True
 
-if os.path.exists(PRED_DIR):
-    shutil.rmtree(PRED_DIR)
+# if os.path.exists(PRED_DIR):
+#     shutil.rmtree(PRED_DIR)
 
 
-print(args)
+# print((args)
 Path(PRED_DIR).mkdir(exist_ok=True, parents=True)
 
 class ImageGenerator(Sequence):
@@ -129,7 +130,7 @@ def read_raster(source:str, band:int=None, window=None, dtype:str='uint8', profi
         image = np.expand_dims(image, 0)
     else: 
         image = raster.read(window=window)
-    # print(image.shape)
+    # # print((image.shape)
     # image = image.transpose([1, 2, 0]).astype(dtype)
     image = image.transpose([1, 2, 0]).astype(dtype)
     if profile:
@@ -203,11 +204,11 @@ pre_image = tile_sequences(np.array([pre_image]), TILE_SIZE)
 pre_image = np.squeeze(pre_image) / 255.0
 
 post_image = read_raster(post_image_path)
+profile = tiled_profile(post_image_path, tile_size=(*TILE_SIZE, 3))
 post_image = tile_sequences(np.array([post_image]))
 post_image = np.squeeze(post_image) / 255.0
 
 
-# profile = tiled_profile(post_image, tile_size=(*TILE_SIZE, 3))
 
 x = ImageGenerator((pre_image, post_image), train=False)
 yhat = best_model.predict(x)
@@ -223,15 +224,13 @@ predictions['city'] = city
 
 
 predictions_csv = f"{RUN_DIR}/predictions_{city}.csv"
-print(predictions_csv)
+# print((predictions_csv)
 if os.path.exists(predictions_csv):
     predictions.to_csv(predictions_csv, mode="a", index=False)
 else:
     predictions.to_csv(predictions_csv, index=False)
 
-
-# write_raster(yhat.reshape((profile['height'], profile['width'])), profile, f"{PRED_DIR}/predictions_{post_image_date}.tif") 
-
-
+final = yhat.reshape((profile['height'], profile['width']))
+write_raster(final, profile, f"{PRED_DIR}/predictions_{post_image_date}.tif") 
 
 

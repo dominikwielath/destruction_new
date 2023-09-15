@@ -63,13 +63,12 @@ for i, bl in enumerate(blocks):
     p = [(i * BLOCK_SIZE) + l for l in p]
     for _ in p:
         pos.append(_)
-    # print(pos)
+    # # print((pos)
     # for p in pos:
-    #     print(labels[p])
+    #     # print((labels[p])
         
 pos = sorted(pos)
 neg = labels.shape[0] - len(pos)
-print(pos, neg)
 add = random.choices(pos, k=(neg - len(pos)))
 add = sorted(add)
 
@@ -80,26 +79,34 @@ for i, bl in enumerate(blocks):
 
     ind = [j - (i*BLOCK_SIZE) for j in add if j >= bl[0] and j < bl[1]]
     if len(ind) > 0:
-        # print(im[ind].shape)
+        # # print((im[ind].shape)
         save_zarr(im_pre[ind], CITY, "im_tr_pre", DATA_DIR)
         save_zarr(im_post[ind], CITY, "im_tr_post", DATA_DIR)
         save_zarr(la[ind], CITY, "la_tr", DATA_DIR)
 
-print(f"There were {labels.shape[0]} total. {neg} negative; {len(pos)} positive. Added {len(add)} positive samples")
-labels = read_zarr(CITY, 'la_tr', DATA_DIR)
-print(f"New shape: {labels.shape}")
-
 f = open(f"{DATA_DIR}/{CITY}/others/metadata.txt", "a")
 
+def print_w(text):
+    f.write(f"{text}\n")
+    print(text)
+
+
+
 f.write("\n\n######## Balancing Step\n\n")
-f.write(f"There were {labels.shape[0]} total. {neg} negative; {len(pos)} positive. Added {len(add)} positive samples\n")
+
+print_w(f"\tTotal images: \t\t\t\t {labels.shape[0]}")
+print_w(f"\tNegatives: \t\t\t\t {neg}")
+print_w(f"\tPositives: \t\t\t\t {len(pos)}")
+print_w(f"\tAdded: \t\t\t\t\t {len(add)} negatives")
+labels = read_zarr(CITY, 'la_tr', DATA_DIR)
+print_w(f"\tNew training size:\t\t\t {labels.shape[0]}")
 
 tr_pre = read_zarr(CITY, "im_tr_pre", DATA_DIR)
 va_pre = read_zarr(CITY, "im_va_pre", DATA_DIR)
 te_pre = read_zarr(CITY, "im_te_pre", DATA_DIR)
 
-f.write(f"Training set: {tr_pre.shape[0]} observations\n")
-f.write(f"Validation set: {va_pre.shape[0]} observations\n")
-f.write(f"Test set: {te_pre.shape[0]} observations\n\n")
+print_w(f"\tTraining set: \t\t\t\t {tr_pre.shape[0]} observations")
+print_w(f"\tValidation set: \t\t\t {va_pre.shape[0]} observations")
+print_w(f"\tTest set: \t\t\t\t {te_pre.shape[0]} observations")
 f.close()
 
