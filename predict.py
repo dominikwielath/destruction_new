@@ -21,8 +21,8 @@ python -m predict 3 aleppo,daraa
 # DATA_DIR = "../data/destr_data"
 
 # For artemisa
-# CITIES = ['hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakh, 'aleppo', 'damascus', 'daraa', 'deirezzor','hama', 'homs', 'idlib', 'raqqa']
-CITIES = ['moschun', 'irpin']
+# CITIES = ['hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha', 'aleppo', 'damascus', 'daraa', 'deirezzor','hama', 'homs', 'idlib', 'raqqa']
+CITIES = ['volnovakha', 'irpin', 'moschun', 'rubizhne']
 OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs/runs/hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_1"
 DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 
@@ -74,29 +74,3 @@ for city in CITIES:
 
             os.system(f"python -m predict_chunk {args.run_id} {pre_} {post_} --data_dir {DATA_DIR} --output_dir {OUTPUT_DIR}")
 
-# Join files for all cities
-file_list = os.listdir(OUTPUT_DIR)
-pattern = r'predictions_[a-zA-Z]+\.csv'            
-
-counter = 0
-for file_name in file_list:
-    if re.match(pattern, file_name):
-        if counter == 0:
-            predictions_all_cities = pd.read_csv(OUTPUT_DIR + "/" + file_name)
-        else:
-            predictions_this_city = pd.read_csv(OUTPUT_DIR + "/" + file_name)
-            if (predictions_this_city.columns == predictions_all_cities.columns).all():
-                predictions_all_cities = pd.concat([predictions_all_cities, predictions_this_city])
-            else:
-                print(f"The columns in file {file_name} did not match with the columns in the other files!")
-        counter += 1
-        
-predictions_all_cities = predictions_all_cities.loc[predictions_all_cities["tr_va_te"] != "tr_va_te"]
-predictions_all_cities = predictions_all_cities.reset_index(drop=True)
-predictions_all_cities["tr_va_te"] = predictions_all_cities["tr_va_te"].astype(int)
-predictions_all_cities["y"] = predictions_all_cities["y"].astype(float)
-predictions_all_cities["yhat"] = predictions_all_cities["yhat"].astype(float)
-
-predictions_csv = f"{OUTPUT_DIR}/predictions_all_cities.csv"
-
-predictions_all_cities.to_csv(predictions_csv)
