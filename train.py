@@ -52,7 +52,7 @@ parser.add_argument("--run_id", help="Run ID")
 
 args = parser.parse_args()
 
-# print((args)
+print(args)
 
 if args.cities:
     CITIES = [el.strip() for el in args.cities.split(",")]
@@ -122,7 +122,7 @@ Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 if args.run_id:
     run_id = int(args.run_id)
 
-# print((f"\n\n### Run ID: {run_id} (use this code for dense_predict.py) \n\n")
+print(f"\n\n### Run ID: {run_id} (use this code for dense_predict.py) \n\n")
 time.sleep(5)
 
 if args.runs_dir:
@@ -141,22 +141,22 @@ def shuffle(old="tr", new="tr_sfl", delete_old=False, block_size = 5000):
     images_pre = zarr.open(f'{TRAINING_DATA_DIR}/im_{old}_pre.zarr')
     images_post = zarr.open(f'{TRAINING_DATA_DIR}/im_{old}_post.zarr')
     labels = zarr.open(f'{TRAINING_DATA_DIR}/la_{old}.zarr')
-    # print(("Shape before shuffle", images_pre.shape)
-    # print(("Shape before shuffle", images_post.shape)
+    print("Shape before shuffle", images_pre.shape)
+    print("Shape before shuffle", images_post.shape)
 
     n = images_pre.shape[0]
     blocks = make_tuple_pair(n, block_size)
     np.random.shuffle(blocks)
 
     for i, bl in enumerate(blocks):
-        # print((i+1, bl)
+        print(i+1, bl)
         im_pre = images_pre[bl[0]: bl[1]]
         im_post = images_post[bl[0]: bl[1]]
         la = labels[bl[0]: bl[1]]
 
         r = np.arange(0, bl[1] - bl[0])
         np.random.shuffle(r)
-        # # print((r)
+        # print(r)
         
         im_pre = im_pre[r]
         im_post = im_post[r]
@@ -188,7 +188,7 @@ im_te_post_length = []
 la_te_length = []
 
 if os.path.exists(TRAINING_DATA_DIR):
-    # print((f"Data already generated and available at: {TRAINING_DATA_DIR}")
+    print(f"Data already generated and available at: {TRAINING_DATA_DIR}")
     
     fp = open(f"{TRAINING_DATA_DIR}/metadata.txt")
     for i, line in enumerate(fp):
@@ -223,7 +223,7 @@ else:
         im_te_post_length.append(im_te_post.shape[0])
         la_te_length.append(la_te.shape[0])
         
-        # print((f"{city}-tr_pre",im_tr_pre)
+        print(f"{city}-tr_pre",im_tr_pre)
         
         steps = make_tuple_pair(im_tr_pre.shape[0], 100000) 
         for i, st in enumerate(steps):
@@ -236,9 +236,9 @@ else:
             save_zarr(_la_tr, f"{TRAINING_DATA_DIR}/la_tr.zarr")
             
             del _im_tr_pre, _im_tr_post, _la_tr
-            # print((f"{city} - TR: Copied {i+1} out of {len(steps)} blocks..")
+            print(f"{city} - TR: Copied {i+1} out of {len(steps)} blocks..")
 
-        # print((f"{city}-va_pre",im_va_pre)
+        print(f"{city}-va_pre",im_va_pre)
         steps = make_tuple_pair(im_va_pre.shape[0], 50000) 
         for i, st in enumerate(steps):
             _im_va_pre = im_va_pre[st[0]:st[1]]
@@ -250,9 +250,9 @@ else:
             save_zarr(_la_va, f"{TRAINING_DATA_DIR}/la_va.zarr")
             
             del _im_va_pre, _im_va_post, _la_va
-            # print((f"{city} - VA: Copied {i+1} out of {len(steps)} blocks..")
+            print(f"{city} - VA: Copied {i+1} out of {len(steps)} blocks..")
 
-        # print((f"{city}-te_pre",im_te_pre)
+        print(f"{city}-te_pre",im_te_pre)
         steps = make_tuple_pair(im_te_pre.shape[0], 50000) 
         for i, st in enumerate(steps):
             _im_te_pre = im_te_pre[st[0]:st[1]]
@@ -264,8 +264,8 @@ else:
             save_zarr(_la_te, f"{TRAINING_DATA_DIR}/la_te.zarr")
 
             del _im_te_pre, _im_te_post, _la_te
-            # print((f"{city} - TE: Copied {i+1} out of {len(steps)} blocks..")
-    # print(('Shuffling step..')
+            print(f"{city} - TE: Copied {i+1} out of {len(steps)} blocks..")
+    print('Shuffling step..')
     shuffle(old="tr", new="tr_sfl", delete_old=True, block_size=5000)
     shuffle(old="tr_sfl", new="tr", delete_old=True, block_size=5000*5)
 
@@ -340,15 +340,27 @@ def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
     tensor = layers.Dropout(rate=dropout, name=f'{name}_dropout')(tensor)
     return tensor 
 
-def convolution_block(inputs, filters:int, dropout:float, name:str):
-    tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution1')(inputs)
-    tensor = layers.Activation('relu', name=f'{name}_activation1')(tensor)
-    tensor = layers.BatchNormalization(name=f'{name}_normalisation1')(tensor)
-    tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution2')(tensor)
-    tensor = layers.Activation('relu', name=f'{name}_activation2')(tensor)
-    tensor = layers.BatchNormalization(name=f'{name}_normalisation2')(tensor)
-    tensor = layers.MaxPool2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
-    tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
+# def convolution_block(inputs, filters:int, dropout:float, name:str):
+#     tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution1')(inputs)
+#     tensor = layers.Activation('relu', name=f'{name}_activation1')(tensor)
+#     tensor = layers.BatchNormalization(name=f'{name}_normalisation1')(tensor)
+#     tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution2')(tensor)
+#     tensor = layers.Activation('relu', name=f'{name}_activation2')(tensor)
+#     tensor = layers.BatchNormalization(name=f'{name}_normalisation2')(tensor)
+#     tensor = layers.MaxPool2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
+#     tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
+#     return tensor
+
+def convolution_block(inputs, filters:int, dropout:float, name:str, n=1):
+    for i in range(n):
+        if i==0:
+            tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(inputs)
+        else:
+            tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(tensor)
+        tensor = layers.Activation('relu', name=f'{name}_activation{i+1}')(tensor)
+        tensor = layers.BatchNormalization(name=f'{name}_normalisation{i+1}')(tensor)
+        tensor = layers.MaxPooling2D(pool_size=(2, 2), name=f'{name}_pooling{i+1}')(tensor)
+        tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout{i+1}')(tensor)
     return tensor
 
 def distance_layer(inputs):
@@ -359,24 +371,24 @@ def distance_layer(inputs):
 
 
 
-def encoder_block_separated(inputs, filters:int=1, dropout=0, n=1, name:str=''):	
-    tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, name=f'{name}_block1')	
-    tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, name=f'{name}_block2')	
-    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name=f'{name}_block3')	
-    tensor  = convolution_block(tensor, filters=filters*8, dropout=dropout, name=f'{name}_block4')	
-    tensor  = convolution_block(tensor, filters=filters*16, dropout=dropout, name=f'{name}_block5')	
-    outputs = layers.Flatten(name=f'{name}_flatten')(tensor)	
+def encoder_block_separated(inputs, filters:int=1, dropout=0, n_convs=1, n_blocks=3, name:str=''):
+    for i in range(n_blocks):
+        if i == 0:
+            tensor  = convolution_block(inputs, filters=(filters*2)//(i+1), dropout=dropout, n=n_convs, name=f'{name}_block{i+1}')
+        else:
+            tensor  = convolution_block(tensor, filters=(filters*2)//(i+1), dropout=dropout, n=n_convs, name=f'{name}_block{i+1}')
+    outputs = layers.Flatten(name=f'{name}_flatten')(tensor)
     return outputs
 
-def encoder_block_shared(shape:tuple, filters:int=1, n=1, dropout=0):	
-    inputs  = layers.Input(shape=shape, name='inputs')	
-    tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, name='block1')	
-    tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, name='block2')	
-    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name='block3')	
-    tensor  = convolution_block(tensor, filters=filters*8, dropout=dropout, name='block4')	
-    tensor  = convolution_block(tensor, filters=filters*16, dropout=dropout, name='block5')	
-    outputs = layers.GlobalAveragePooling2D(name='global_pooling')(tensor)	
-    encoder = models.Model(inputs=inputs, outputs=outputs, name='encoder')	
+def encoder_block_shared(shape:tuple, filters:int=1, n_convs=1, n_blocks=3, dropout=0):
+    inputs  = layers.Input(shape=shape, name='inputs'),
+    for i in range(n_blocks):
+        if i == 0:
+            tensor  = convolution_block(inputs, filters=(filters*2)//(i+1), dropout=dropout, n=n_convs, name=f'block{i+1}')
+        else:
+            tensor =  convolution_block(tensor, filters=(filters*2)//(i+1), dropout=dropout, n=n_convs, name=f'block{i+1}')
+    outputs = layers.GlobalAveragePooling2D(name='global_pooling')(tensor)
+    encoder = models.Model(inputs=inputs, outputs=outputs, name='encoder')
     return encoder
 
 
@@ -459,7 +471,7 @@ class SiameseGenerator(Sequence):
     def __getitem__(self, index):
         X_pre = self.images_pre[index*self.batch_size:(index+1)*self.batch_size].astype('float') / 255.0
         X_post = self.images_post[index*self.batch_size:(index+1)*self.batch_size].astype('float') / 255.0
-        y = self.labels[index*self.batch_size:(index+1)*self.batch_size] * 1.0
+        y = self.labels[index*self.batch_size:(index+1)*self.batch_size]
 
         if self.train:
             return {'images_t0': X_pre, 'images_tt': X_post}, y
@@ -506,18 +518,18 @@ class SubgroupValidationCallback(Callback):
         return roc_auc_test_city
 
     def on_epoch_end(self, epoch, logs=None):
-        # Calculate and # print( validation metrics for subgroups
+        # Calculate and print validation metrics for subgroups
         for i, city in enumerate(self.cities):
             if i == 0:
             	city_im_pre = self.im_pre[:self.length_list[i],:,:,:]
             	city_im_post = self.im_post[:self.length_list[i],:,:,:]
             	city_la = self.la[:self.length_list[i]]
-            	# print((0, self.length_list[i])
+            	print(0, self.length_list[i])
             else:
                 previous_index_end = 0
                 for j in range(i):
             	    previous_index_end += self.length_list[j]
-                # print((previous_index_end, previous_index_end+self.length_list[i])
+                print(previous_index_end, previous_index_end+self.length_list[i])
                 city_im_pre = self.im_pre[previous_index_end:previous_index_end+self.length_list[i],:,:,:]
                 city_im_post = self.im_post[previous_index_end:previous_index_end+self.length_list[i],:,:,:]
                 city_la = self.la[previous_index_end:previous_index_end+self.length_list[i]]
@@ -525,13 +537,13 @@ class SubgroupValidationCallback(Callback):
             gen_city = SiameseGenerator((city_im_pre, city_im_post), city_la, batch_size=BATCH_SIZE)
             
             city_auc = self.calculate_metrics(city, gen_city, city_la)
-            # print((f"Epoch {epoch + 1} - Subgroup {city} - val_auc: {city_auc:.4f} \n")
+            print(f"Epoch {epoch + 1} - Subgroup {city} - val_auc: {city_auc:.4f} \n")
 
 # ------------------------------
 
-# print((im_va_pre.shape)
+print(im_va_pre.shape)
 
-# print(("+++++++++", gen_tr.__len__())
+print("+++++++++", gen_tr.__len__())
 MODEL_STORAGE_LOCATION = f"{RUN_DIR}/model"
 Path(MODEL_STORAGE_LOCATION).mkdir(parents=True)
 training_callbacks = [
@@ -577,7 +589,7 @@ if MODEL == 'snn':
     )
 
 if MODEL == 'double':
-    args_encode = dict(filters=filters, dropout=dropout)
+    args_encode = dict(filters=filters, dropout=dropout, n_blocks=3, n_convs=2)
     model = double_convolutional_network(
         shape=(*PATCH_SIZE, 3),  
         args_encode = args_encode,
@@ -614,8 +626,8 @@ try:
     verbose=1,
     callbacks=training_callbacks)
 except:
-  # print(("## Model training stopped, generating numbers on best model so far..")
-  # print(("## Please wait, the program will terminate automatically..")
+  print("## Model training stopped, generating numbers on best model so far..")
+  print("## Please wait, the program will terminate automatically..")
 # Train model on dataset
 
 
@@ -665,13 +677,13 @@ ax.set_xlabel('Recall')
 f = open(f"{RUN_DIR}/metadata.txt", "a")
 f.write("\n\n######## Test set performance\n\n")
 f.write(f'Test Set AUC Score for the ROC Curve: {roc_auc_test} \nAverage precision:  {np.mean(precision)}\n')
-# print((f"""
+print(f"""
     Test Set AUC Score for the ROC Curve: {roc_auc_test} 
     Average precision:  {np.mean(precision)}
     Parameters: {parameters}
 """)
 # ------------------------------------ Dominik 14.08.2023
-# print((f"\n \n")
+print(f"\n \n")
 for i, city in enumerate(CITIES):
             if i == 0:
             	city_im_pre = im_te_pre[:te_length[i],:,:,:]
@@ -687,7 +699,7 @@ for i, city in enumerate(CITIES):
             sample_size = te_length[i]
             gen_city = SiameseGenerator((city_im_pre, city_im_post), city_la, batch_size=BATCH_SIZE)
             city_auc = calculate_metrics(best_model, city, gen_city, city_la)
-            # print((f" - {city} - Sample size: {sample_size} - test_auc: {city_auc:.4f} \n")
+            print(f" - {city} - Sample size: {sample_size} - test_auc: {city_auc:.4f} \n")
             f.write(f" - {city} - Sample size: {sample_size} - test_auc: {city_auc:.4f} \n")
 # --------
 f.close()
@@ -705,7 +717,6 @@ delete_zarr_if_exists(f"{RUN_DIR}/la_va.zarr")
 delete_zarr_if_exists(f"{RUN_DIR}/im_te_pre.zarr")
 delete_zarr_if_exists(f"{RUN_DIR}/im_te_post.zarr")
 delete_zarr_if_exists(f"{RUN_DIR}/la_te.zarr")
-
 
 
 

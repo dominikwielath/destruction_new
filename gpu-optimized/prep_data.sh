@@ -3,7 +3,7 @@
 source env/bin/activate
 
 # declare -a Cities=("aleppo" "daraa" "damascus" "deir-ez-zor" "hama" "homs" "idlib" "raqqa")
-declare -a Cities=("aleppo")
+declare -a Cities=("aleppo" "daraa")
 # declare -a Cities=("moschun" "volnovakha")
 # declare -a Cities=('hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha')
 # declare -a Cities=("aleppo")
@@ -19,8 +19,7 @@ for city in "${Cities[@]}"; do
     printf "\n"
     echo "#### Labeling:" $city
     printf "\n"
-    python3 label_corrected.py --city $city --data_dir $data_dir
-    # python3 label.py --city $city --data_dir $data_dir
+    python3 label.py --city $city --data_dir $data_dir
     printf "\n"
     echo "#### Tiling:" $city
     printf "\n"

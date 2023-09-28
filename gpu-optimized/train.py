@@ -13,10 +13,20 @@ import matplotlib.pyplot as plt
 import time
 import shutil
 
-
-CITIES = ['aleppo', 'daraa']
-DATA_DIR = "../data/destr_data"
+# For local
+CITIES = ['aleppo']
 OUTPUT_DIR = "../data/destr_outputs"
+DATA_DIR = "../data/destr_data"
+
+# ## For artemisa
+# CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+# OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
+# DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
+
+## For workstation
+# CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+# OUTPUT_DIR = "../outputs"
+# DATA_DIR = "../data"
 MODEL = "double"
 
 import argparse
@@ -34,9 +44,10 @@ parser.add_argument("--batch_size", help="Batch Size")
 
 args = parser.parse_args()
 
+# print((args)
+
 if args.cities:
     CITIES = [el.strip() for el in args.cities.split(",")]
-
 
 if args.model:
     MODEL = args.model
@@ -48,8 +59,6 @@ if args.data_dir:
     DATA_DIR = args.data_dir
 
 
-print(args)
-
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'
     return zarr.open(path)
@@ -57,6 +66,14 @@ def read_zarr(city, suffix, path="../data"):
 def save_zarr(data, path):
     # path = f'{path}/{city}/others/{city}_{suffix}.zarr'
 
+    if not os.path.exists(path):
+        zarr.save(path, data)        
+    else:
+        za = zarr.open(path, mode='a')
+        za.append(data)
+
+def save_zarr_sfl(data, suffix, path="../data"):
+    path = f'{path}/{suffix}.zarr'
     if not os.path.exists(path):
         zarr.save(path, data)        
     else:
@@ -83,6 +100,8 @@ def make_tuple_pair(n, step_size):
     return l
 
 
+
+
 Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 
 runs = [f for f in os.listdir(OUTPUT_DIR) if ".log" not in f]
@@ -94,11 +113,47 @@ time.sleep(5)
 
 
 RUN_DIR = OUTPUT_DIR + f"/{run_id}"
+TRAINING_DATA_DIR = OUTPUT_DIR + f"/data/{'-'.join(CITIES)}"
 Path(RUN_DIR).mkdir(parents=True, exist_ok=True)
 
 f = open(f"{OUTPUT_DIR}/runs.log", "a")
 f.write(f"Run {run_id}: {CITIES} \n")
 f.close()
+
+def shuffle(old="tr", new="tr_sfl", delete_old=False, block_size = 5000):
+    images_pre = zarr.open(f'{TRAINING_DATA_DIR}/im_{old}_pre.zarr')
+    images_post = zarr.open(f'{TRAINING_DATA_DIR}/im_{old}_post.zarr')
+    labels = zarr.open(f'{TRAINING_DATA_DIR}/la_{old}.zarr')
+    # print(("Shape before shuffle", images_pre.shape)
+    # print(("Shape before shuffle", images_post.shape)
+
+    n = images_pre.shape[0]
+    blocks = make_tuple_pair(n, block_size)
+    np.random.shuffle(blocks)
+
+    for i, bl in enumerate(blocks):
+        # print((i+1, bl)
+        im_pre = images_pre[bl[0]: bl[1]]
+        im_post = images_post[bl[0]: bl[1]]
+        la = labels[bl[0]: bl[1]]
+
+        r = np.arange(0, bl[1] - bl[0])
+        np.random.shuffle(r)
+        # # print((r)
+        
+        im_pre = im_pre[r]
+        im_post = im_post[r]
+        la = la[r]
+
+        save_zarr_sfl(data=im_pre, suffix=f"im_{new}_pre", path=TRAINING_DATA_DIR)
+        save_zarr_sfl(data=im_post, suffix=f"im_{new}_post", path=TRAINING_DATA_DIR)
+        save_zarr_sfl(data=la, suffix=f"la_{new}", path=TRAINING_DATA_DIR)
+
+    if delete_old == True:
+        delete_zarr_if_exists(f"{TRAINING_DATA_DIR}/im_{old}_pre.zarr")
+        delete_zarr_if_exists(f"{TRAINING_DATA_DIR}/im_{old}_post.zarr")
+        delete_zarr_if_exists(f"{TRAINING_DATA_DIR}/la_{old}.zarr")
+
 
 # im_tr_pre = None
 # im_tr_post = None
@@ -107,60 +162,68 @@ f.close()
 # im_va_post = None
 # la_va = None
 
+if os.path.exists(TRAINING_DATA_DIR):
+    print(f"Data already generated and available at: {TRAINING_DATA_DIR}")
+else:
+    Path(TRAINING_DATA_DIR).mkdir(parents=True, exist_ok=True)      
+    for city in CITIES:
+        im_tr_pre = read_zarr(city, "im_tr_pre", DATA_DIR)
+        im_tr_post = read_zarr(city, "im_tr_post", DATA_DIR)
+        la_tr= read_zarr(city, "la_tr", DATA_DIR)
 
-for city in CITIES:
-    im_tr_pre = read_zarr(city, "im_tr_pre", DATA_DIR)
-    im_tr_post = read_zarr(city, "im_tr_post", DATA_DIR)
-    la_tr= read_zarr(city, "la_tr", DATA_DIR)
+        im_va_pre = read_zarr(city, "im_va_pre", DATA_DIR)
+        im_va_post = read_zarr(city, "im_va_post", DATA_DIR)
+        la_va = read_zarr(city, "la_va", DATA_DIR)
 
-    im_va_pre = read_zarr(city, "im_va_pre", DATA_DIR)
-    im_va_post = read_zarr(city, "im_va_post", DATA_DIR)
-    la_va = read_zarr(city, "la_va", DATA_DIR)
+        im_te_pre = read_zarr(city, "im_te_pre", DATA_DIR)
+        im_te_post = read_zarr(city, "im_te_post", DATA_DIR)
+        la_te = read_zarr(city, "la_te", DATA_DIR)
 
-    im_te_pre = read_zarr(city, "im_te_pre", DATA_DIR)
-    im_te_post = read_zarr(city, "im_te_post", DATA_DIR)
-    la_te = read_zarr(city, "la_te", DATA_DIR)
+        # print((f"{city}-tr_pre",im_tr_pre)
+        steps = make_tuple_pair(im_tr_pre.shape[0], 100000) 
+        for i, st in enumerate(steps):
+            _im_tr_pre = im_tr_pre[st[0]:st[1]]
+            _im_tr_post = im_tr_post[st[0]:st[1]]
+            _la_tr = la_tr[st[0]:st[1]]
 
+            save_zarr(_im_tr_pre, f"{TRAINING_DATA_DIR}/im_tr_pre.zarr")
+            save_zarr(_im_tr_post, f"{TRAINING_DATA_DIR}/im_tr_post.zarr")
+            save_zarr(_la_tr, f"{TRAINING_DATA_DIR}/la_tr.zarr")
+            
+            del _im_tr_pre, _im_tr_post, _la_tr
+            # print((f"{city} - TR: Copied {i+1} out of {len(steps)} blocks..")
 
-    steps = make_tuple_pair(im_tr_pre.shape[0], 100000) 
-    for i, st in enumerate(steps):
-        _im_tr_pre = im_tr_pre[st[0]:st[1]]
-        _im_tr_post = im_tr_post[st[0]:st[1]]
-        _la_tr = la_tr[st[0]:st[1]]
+        # print((f"{city}-va_pre",im_va_pre)
+        steps = make_tuple_pair(im_va_pre.shape[0], 50000) 
+        for i, st in enumerate(steps):
+            _im_va_pre = im_va_pre[st[0]:st[1]]
+            _im_va_post = im_va_post[st[0]:st[1]]
+            _la_va = la_va[st[0]:st[1]]
 
-        save_zarr(_im_tr_pre, f"{RUN_DIR}/im_tr_pre.zarr")
-        save_zarr(_im_tr_post, f"{RUN_DIR}/im_tr_post.zarr")
-        save_zarr(_la_tr, f"{RUN_DIR}/la_tr.zarr")
-        
-        del _im_tr_pre, _im_tr_post, _la_tr
-        print(f"{city} - TR: Copied {i+1} out of {len(steps)} blocks..")
+            save_zarr(_im_va_pre, f"{TRAINING_DATA_DIR}/im_va_pre.zarr")
+            save_zarr(_im_va_post, f"{TRAINING_DATA_DIR}/im_va_post.zarr")
+            save_zarr(_la_va, f"{TRAINING_DATA_DIR}/la_va.zarr")
+            
+            del _im_va_pre, _im_va_post, _la_va
+            # print((f"{city} - VA: Copied {i+1} out of {len(steps)} blocks..")
 
+        # print((f"{city}-te_pre",im_te_pre)
+        steps = make_tuple_pair(im_te_pre.shape[0], 50000) 
+        for i, st in enumerate(steps):
+            _im_te_pre = im_te_pre[st[0]:st[1]]
+            _im_te_post = im_te_post[st[0]:st[1]]
+            _la_te = la_te[st[0]:st[1]]
 
-    steps = make_tuple_pair(im_va_pre.shape[0], 50000) 
-    for i, st in enumerate(steps):
-        _im_va_pre = im_va_pre[st[0]:st[1]]
-        _im_va_post = im_va_post[st[0]:st[1]]
-        _la_va = la_va[st[0]:st[1]]
+            save_zarr(_im_te_pre, f"{TRAINING_DATA_DIR}/im_te_pre.zarr")
+            save_zarr(_im_te_post, f"{TRAINING_DATA_DIR}/im_te_post.zarr")
+            save_zarr(_la_te, f"{TRAINING_DATA_DIR}/la_te.zarr")
 
-        save_zarr(_im_va_pre, f"{RUN_DIR}/im_va_pre.zarr")
-        save_zarr(_im_va_post, f"{RUN_DIR}/im_va_post.zarr")
-        save_zarr(_la_va, f"{RUN_DIR}/la_va.zarr")
-        
-        del _im_va_pre, _im_va_post, _la_va
-        print(f"{city} - VA: Copied {i+1} out of {len(steps)} blocks..")
+            del _im_te_pre, _im_te_post, _la_te
+            # print((f"{city} - TE: Copied {i+1} out of {len(steps)} blocks..")
+    # print(('Shuffling step..')
+    shuffle(old="tr", new="tr_sfl", delete_old=True, block_size=5000)
+    shuffle(old="tr_sfl", new="tr", delete_old=True, block_size=5000*5)
 
-    steps = make_tuple_pair(im_te_pre.shape[0], 50000) 
-    for i, st in enumerate(steps):
-        _im_te_pre = im_te_pre[st[0]:st[1]]
-        _im_te_post = im_te_post[st[0]:st[1]]
-        _la_te = la_te[st[0]:st[1]]
-
-        save_zarr(_im_te_pre, f"{RUN_DIR}/im_te_pre.zarr")
-        save_zarr(_im_te_post, f"{RUN_DIR}/im_te_post.zarr")
-        save_zarr(_la_te, f"{RUN_DIR}/la_te.zarr")
-
-        del _im_te_pre, _im_te_post, _la_te
-        print(f"{city} - TE: Copied {i+1} out of {len(steps)} blocks..")
 
 def save_img(pre, post, labels, filename):
     random_index = random.randint(0,pre.shape[0] - 10)
@@ -175,34 +238,18 @@ def save_img(pre, post, labels, filename):
     plt.suptitle("Pre-post")
     plt.savefig(f"{RUN_DIR}/{filename}")
 
-def shuffle_inmem(pre, post, labels):
-    shuffled = np.arange(0, pre.shape[0])
-    np.random.shuffle(shuffled) 
-    return pre[shuffled], post[shuffled], labels[shuffled]
+im_tr_pre = zarr.open(f"{TRAINING_DATA_DIR}/im_tr_pre.zarr")
+im_tr_post = zarr.open(f"{TRAINING_DATA_DIR}/im_tr_post.zarr")
+la_tr= zarr.open(f"{TRAINING_DATA_DIR}/la_tr.zarr")
 
+im_va_pre = zarr.open(f"{TRAINING_DATA_DIR}/im_va_pre.zarr")
+im_va_post = zarr.open(f"{TRAINING_DATA_DIR}/im_va_post.zarr")
+la_va = zarr.open(f"{TRAINING_DATA_DIR}/la_va.zarr")
 
-im_tr_pre = zarr.open(f"{RUN_DIR}/im_tr_pre.zarr")[:]
-im_tr_post = zarr.open(f"{RUN_DIR}/im_tr_post.zarr")[:]
-la_tr= zarr.open(f"{RUN_DIR}/la_tr.zarr")[:]
+im_te_pre = zarr.open(f"{TRAINING_DATA_DIR}/im_te_pre.zarr")
+im_te_post = zarr.open(f"{TRAINING_DATA_DIR}/im_te_post.zarr")
+la_te = zarr.open(f"{TRAINING_DATA_DIR}/la_te.zarr")
 
-im_tr_pre, im_tr_post, la_tr = shuffle_inmem(im_tr_pre, im_tr_post, la_tr)
-
-save_img( im_tr_pre, im_tr_post, la_tr, "tr_inmem_sfl_ex.png",)
-
-
-im_va_pre = zarr.open(f"{RUN_DIR}/im_va_pre.zarr")[:]
-im_va_post = zarr.open(f"{RUN_DIR}/im_va_post.zarr")[:]
-la_va = zarr.open(f"{RUN_DIR}/la_va.zarr")[:]
-
-im_va_pre, im_va_post, la_va = shuffle_inmem(im_va_pre, im_va_post, la_va)
-save_img( im_va_pre, im_va_post, la_va,"va_inmem_sfl_ex.png")
-
-im_te_pre = zarr.open(f"{RUN_DIR}/im_te_pre.zarr")[:]
-im_te_post = zarr.open(f"{RUN_DIR}/im_te_post.zarr")[:]
-la_te = zarr.open(f"{RUN_DIR}/la_te.zarr")[:]
-
-im_te_pre, im_te_post, la_te = shuffle_inmem(im_te_pre, im_te_post, la_te)
-save_img(im_te_pre, im_te_post, la_te, "te_inmem_sfl_ex.png")
 
 f = open(f"{RUN_DIR}/metadata.txt", "a")
 f.write(f"\n\n######## Run {run_id}: {CITIES} \n\n")
@@ -217,14 +264,15 @@ f.close()
 
 BATCH_SIZE = 32
 PATCH_SIZE = (128,128)
-FILTERS = [16]
-DROPOUT = [0.1, 0.2]
+FILTERS = [32]
+DROPOUT = [0.12, 0.15]
 EPOCHS = [70, 100]
 UNITS = [64, 128]
-LR = [0.1]
+LR = [0.00003, 0.0001]
 
 
-
+if args.batch_size:
+    BATCH_SIZE = int(args.batch_size)
 
 def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
     tensor = layers.Dense(units=units, use_bias=False, kernel_initializer='he_normal', name=f'{name}_dense')(inputs)
@@ -233,25 +281,28 @@ def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
     tensor = layers.Dropout(rate=dropout, name=f'{name}_dropout')(tensor)
     return tensor 
 
-# def convolution_block(inputs, filters:int, dropout:float, name:str):
-#     tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution1')(inputs)
-#     tensor = layers.Activation('relu', name=f'{name}_activation1')(tensor)
-#     tensor = layers.BatchNormalization(name=f'{name}_normalisation1')(tensor)
-#     tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution2')(tensor)
-#     tensor = layers.Activation('relu', name=f'{name}_activation2')(tensor)
-#     tensor = layers.BatchNormalization(name=f'{name}_normalisation2')(tensor)
-#     tensor = layers.MaxPool2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
-#     tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
-#     return tensor
-
-def convolution_block(inputs, filters:int, dropout:float, name:str, n=1):
-    for i in range(n):
-        tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', activation='relu', name=f'{name}_convolution{i+1}')(inputs)
-        # tensor = layers.Activation('relu', name=f'{name}_activation{i+1}')(tensor)
-        tensor = layers.BatchNormalization(name=f'{name}_normalisation{i+1}')(tensor)
-        tensor = layers.MaxPooling2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
-        tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
+def convolution_block(inputs, filters:int, dropout:float, name:str):
+    tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution1')(inputs)
+    tensor = layers.Activation('relu', name=f'{name}_activation1')(tensor)
+    tensor = layers.BatchNormalization(name=f'{name}_normalisation1')(tensor)
+    tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution2')(tensor)
+    tensor = layers.Activation('relu', name=f'{name}_activation2')(tensor)
+    tensor = layers.BatchNormalization(name=f'{name}_normalisation2')(tensor)
+    tensor = layers.MaxPool2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
+    tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
     return tensor
+
+# def convolution_block(inputs, filters:int, dropout:float, name:str, n=1):
+#     for i in range(n):
+#         if i==0:
+#             tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(inputs)
+#         else:
+#             tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(tensor)
+#         tensor = layers.Activation('relu', name=f'{name}_activation{i+1}')(tensor)
+#         tensor = layers.BatchNormalization(name=f'{name}_normalisation{i+1}')(tensor)
+#         tensor = layers.MaxPooling2D(pool_size=(2, 2), name=f'{name}_pooling{i+1}')(tensor)
+#         tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout{i+1}')(tensor)
+#     return tensor
 
 def distance_layer(inputs):
     input0, input1 = inputs
@@ -261,20 +312,25 @@ def distance_layer(inputs):
 
 
 
-def encoder_block_separated(inputs, filters:int=1, dropout=0, n_convs=1, n_blocks=3, name:str=''):
-    for i in range(n_blocks):
-        tensor  = convolution_block(inputs, filters=(filters*2)//(i+1), dropout=dropout, n=n_convs, name=f'{name}_block{i+1}')
 
-    outputs = layers.Flatten(name=f'{name}_flatten')(tensor)
+def encoder_block_separated(inputs, filters:int=1, dropout=0, n=1, name:str=''):	
+    tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, name=f'{name}_block1')	
+    tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, name=f'{name}_block2')	
+    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name=f'{name}_block3')	
+    tensor  = convolution_block(tensor, filters=filters*8, dropout=dropout, name=f'{name}_block4')	
+    tensor  = convolution_block(tensor, filters=filters*16, dropout=dropout, name=f'{name}_block5')	
+    outputs = layers.Flatten(name=f'{name}_flatten')(tensor)	
     return outputs
 
-def encoder_block_shared(shape:tuple, filters:int=1, n_convs=1, n_blocks=3, dropout=0):
-    inputs  = layers.Input(shape=shape, name='inputs'),
-    for i in range(n_blocks):
-        tensor  = convolution_block(inputs, filters=(filters*2)//(i+1), dropout=dropout, n=n_convs, name=f'block{i+1}')
-    
-    # outputs = layers.GlobalAveragePooling2D(name='global_pooling')(tensor)
-    encoder = models.Model(inputs=inputs, outputs=outputs, name='encoder')
+def encoder_block_shared(shape:tuple, filters:int=1, n=1, dropout=0):	
+    inputs  = layers.Input(shape=shape, name='inputs')	
+    tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, name='block1')	
+    tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, name='block2')	
+    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name='block3')	
+    tensor  = convolution_block(tensor, filters=filters*8, dropout=dropout, name='block4')	
+    tensor  = convolution_block(tensor, filters=filters*16, dropout=dropout, name='block5')	
+    outputs = layers.GlobalAveragePooling2D(name='global_pooling')(tensor)	
+    encoder = models.Model(inputs=inputs, outputs=outputs, name='encoder')	
     return encoder
 
 
@@ -341,7 +397,6 @@ def double_convolutional_network(shape:tuple, args_encode:dict, args_dense:dict)
 
 class SiameseGenerator(Sequence):
     def __init__(self, images, labels, batch_size=BATCH_SIZE, train=True):
-    
         self.images_pre = images[0]
         self.images_post = images[1]
         self.labels = labels
@@ -358,7 +413,7 @@ class SiameseGenerator(Sequence):
     def __getitem__(self, index):
         X_pre = self.images_pre[index*self.batch_size:(index+1)*self.batch_size].astype('float') / 255.0
         X_post = self.images_post[index*self.batch_size:(index+1)*self.batch_size].astype('float') / 255.0
-        y = self.labels[index*self.batch_size:(index+1)*self.batch_size]
+        y = self.labels[index*self.batch_size:(index+1)*self.batch_size] * 1.0
 
         if self.train:
             return {'images_t0': X_pre, 'images_tt': X_post}, y
@@ -371,8 +426,7 @@ gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr, batch_size=BATCH_SIZE)
 gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va, batch_size=BATCH_SIZE)
 
 
-
-# print(im_tr_pre.shape[i])
+# print((gen_tr.__getitem__(10))
 
 indices = np.random.randint(0, im_tr_pre.shape[0]//32, 5)
 
@@ -389,20 +443,11 @@ for j, ind in enumerate(indices):
     plt.savefig(f"{RUN_DIR}/traing_data_samples_{j+1}.png")
 
 
-
-# fig, ax = plt.subplots(2,5,dpi=200, figsize=(25,10))
-# ax = ax.flatten()
-# for i, image in enumerate(tr_pre[index:index+5]):
-#     ax[i].imshow(image)
-# for i, image in enumerate(tr_post[index:index+5]):
-#     ax[i+5].imshow(image)
-# plt.suptitle("Training set (sample images; top=pre, bottom=post)")
-# plt.savefig(f"{DATA_DIR}/{CITY}/others/tr_samples.png")
-
-print("+++++++++", gen_tr.__len__())
+# print(("+++++++++", gen_tr.__len__())
 MODEL_STORAGE_LOCATION = f"{RUN_DIR}/model"
+Path(MODEL_STORAGE_LOCATION).mkdir(parents=True)
 training_callbacks = [
-    callbacks.EarlyStopping(monitor='val_auc', patience=5, restore_best_weights=True),
+    callbacks.EarlyStopping(monitor='val_auc', patience=2, restore_best_weights=True),
     callbacks.ModelCheckpoint(f'{MODEL_STORAGE_LOCATION}', monitor='val_auc', verbose=0, save_best_only=True, save_weights_only=False, mode='max')
 ]
 
@@ -428,8 +473,8 @@ if args.dropout:
 
 args  = dict(filters=filters, dropout=dropout, units=units) # ! Check parameters before run
 args_dense  = dict(units=units, dropout=dropout)
-parameters = f'batch_size={BATCH_SIZE} filters={filters}, \ndropout={np.round(dropout, 4)}, \nepochs={epochs}, \nunits={units}, \nlearning_rate={lr}'
-print(parameters)
+parameters = f'batch_size={BATCH_SIZE} filters={filters}, dropout={np.round(dropout, 4)}, epochs={epochs}, units={units}, learning_rate={lr}'
+# print((parameters)
 f = open(f"{RUN_DIR}/metadata.txt", "a")
 f.write(f"\n######## Run parameters \n\n{parameters}")
 f.close()
@@ -443,8 +488,7 @@ if MODEL == 'snn':
     )
 
 if MODEL == 'double':
-    args_encode = dict(filters=filters, dropout=dropout, n_blocks=2, n_convs=1)
-    
+    args_encode = dict(filters=filters, dropout=dropout)
     model = double_convolutional_network(
         shape=(*PATCH_SIZE, 3),  
         args_encode = args_encode,
@@ -459,7 +503,6 @@ if MODEL == 'diff':
         args_dense = args_dense,
     )
 
-
 if MODEL == 'triple':
     args_encode = dict(filters=filters, dropout=dropout,  n_blocks=2, n_convs=3)
     model = double_convolutional_network(
@@ -468,8 +511,7 @@ if MODEL == 'triple':
         args_dense = args_dense,
     )
 
-
-optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=lr)
+optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
 model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])
 model.summary()
 
@@ -530,6 +572,7 @@ f.write(f'Test Set AUC Score for the ROC Curve: {roc_auc_test} \nAverage precisi
 print(f"""
     Test Set AUC Score for the ROC Curve: {roc_auc_test} 
     Average precision:  {np.mean(precision)}
+    Parameters: {parameters}
 """)
 f.close()
 #display plot
@@ -546,6 +589,7 @@ delete_zarr_if_exists(f"{RUN_DIR}/la_va.zarr")
 delete_zarr_if_exists(f"{RUN_DIR}/im_te_pre.zarr")
 delete_zarr_if_exists(f"{RUN_DIR}/im_te_post.zarr")
 delete_zarr_if_exists(f"{RUN_DIR}/la_te.zarr")
+
 
 
 

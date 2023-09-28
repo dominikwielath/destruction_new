@@ -97,7 +97,7 @@ f.write("\n\n######## Balancing Step\n\n")
 print_w(f"\tTotal tr images: \t\t\t {labels.shape[0]}")
 print_w(f"\t\tNegatives: \t\t\t {neg}")
 print_w(f"\t\tPositives: \t\t\t {len(pos)}")
-print_w(f"\t\tAdded: \t\t\t\t {len(add)} positive")
+print_w(f"\t\tAdded: \t\t\t\t {len(add)} negatives")
 labels = read_zarr(CITY, 'la_tr', DATA_DIR)
 print_w(f"\tNew tr size:\t\t\t\t {labels.shape[0]}")
 
