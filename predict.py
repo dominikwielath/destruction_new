@@ -21,8 +21,9 @@ python -m predict 3 aleppo,daraa
 # DATA_DIR = "../data/destr_data"
 
 # For artemisa
-# CITIES = ['hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha, 'aleppo', 'damascus', 'daraa', 'deirezzor','hama', 'homs', 'idlib', 'raqqa']
-CITIES = ['moschun', 'irpin']
+# CITIES = ['hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha', 'aleppo', 'damascus', 'daraa', 'deirezzor','hama', 'homs', 'idlib', 'raqqa']
+CITIES = ['volnovakha', 'irpin', 'moschun', 'rubizhne']
+
 OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs/runs/hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_1"
 DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 
