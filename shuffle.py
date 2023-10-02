@@ -61,19 +61,28 @@ def delete_zarr_if_exists(city, suffix, path="../data"):
     if os.path.exists(path):
         shutil.rmtree(path)
 
+f = open(f"{DATA_DIR}/{CITY}/others/metadata.txt", "a")
+
+def print_w(text):
+    f.write(f"{text}\n")
+    print(text)
+
 def shuffle(old="tr", new="tr_sfl", delete_old=False, block_size = BLOCK_SIZE):
     images_pre = read_zarr(city=CITY, suffix=f"im_{old}_pre", path=DATA_DIR)
     images_post= read_zarr(city=CITY, suffix=f"im_{old}_post", path=DATA_DIR)
     labels = read_zarr(city=CITY, suffix=f"la_{old}", path=DATA_DIR)
-    print("Shape before shuffle", images_pre.shape)
-    print("Shape before shuffle", images_post.shape)
+    print_w(f"\t\tTotal tr images: \t\t {images_pre.shape[0]}")
 
     n = images_pre.shape[0]
     blocks = make_tuple_pair(n, block_size)
     np.random.shuffle(blocks)
+    print_w(f"\t\tShuffle block size: \t\t {block_size}")
+
 
     for i, bl in enumerate(blocks):
-        print(i+1, bl)
+        print_w(f"\t\t\tShuffle block {i+1}: \t {bl}")
+
+        # print(i+1, bl)
         im_pre = images_pre[bl[0]: bl[1]]
         im_post = images_post[bl[0]: bl[1]]
         la = labels[bl[0]: bl[1]]
@@ -95,13 +104,14 @@ def shuffle(old="tr", new="tr_sfl", delete_old=False, block_size = BLOCK_SIZE):
         delete_zarr_if_exists(CITY, f"im_{old}_post", DATA_DIR)
         delete_zarr_if_exists(CITY, f"la_{old}", DATA_DIR)
 
-
+print_w(f"\tRound 1:")
 shuffle(old="tr", new="tr_sfl", delete_old=True, block_size=BLOCK_SIZE)
+print_w(f"\tRound 2:")
 shuffle(old="tr_sfl", new="tr", delete_old=True, block_size=BLOCK_SIZE*5)
 
 
 
-print("Sanity Check 1: Training")
+# print("Sanity Check 1: Training")
 tr_pre = read_zarr(CITY, "im_tr_pre", DATA_DIR)
 tr_post = read_zarr(CITY, "im_tr_post", DATA_DIR)
 la_tr = read_zarr(CITY, "la_tr", DATA_DIR)
@@ -124,10 +134,10 @@ save_img(random.randint(0,tr_pre.shape[0] - 10), "tr_samples_shuffled_ex1.png")
 save_img(random.randint(0,tr_pre.shape[0] - 10), "tr_samples_shuffled_ex2.png")
 save_img(random.randint(0,tr_pre.shape[0] - 10), "tr_samples_shuffled_ex3.png")
 
-print("Sanity Check 2: Testing")
+# print("Sanity Check 2: Testing")
 te_pre = read_zarr(CITY, "im_te_pre", DATA_DIR)
 
-print("Sanity Check 1: Validation")
+# print("Sanity Check 1: Validation")
 va_pre = read_zarr(CITY, "im_va_pre", DATA_DIR)
 
 f = open(f"{DATA_DIR}/{CITY}/others/metadata.txt", "a")
