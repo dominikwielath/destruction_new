@@ -68,9 +68,6 @@ image      = search_data(pattern(city=CITY, type='image'), directory=DATA_DIR)[0
 settlement = search_data(f'{CITY}_settlement.*gpkg$', directory=DATA_DIR)
 noanalysis = search_data(f'{CITY}_noanalysis.*gpkg$', directory=DATA_DIR)
 
-print(image)
-print(settlement)
-print(noanalysis)
 
 profile    = tiled_profile(image, tile_size=(*TILE_SIZE, 1))
 settlement = rasterise(settlement, profile, dtype='bool')
@@ -94,6 +91,12 @@ def write_raster(array:np.ndarray, profile, destination:str, nodata:int=None, dt
         raster.close()
 
 
+f = open(f"{DATA_DIR}/{CITY}/others/metadata.txt", "a")
+
+def print_w(text):
+    f.write(f"{text}\n")
+    print(text)
+
 # Generate samples if REFRESH_SAMPLES=True
 if REFRESH_SAMPLE:
     # Splits samples
@@ -102,5 +105,7 @@ if REFRESH_SAMPLE:
     index   = np.random.choice(np.arange(len(index)) + 1, np.sum(analysis), p=list(index.values()))
     samples = analysis.astype(int)
     np.place(samples, analysis, index)
+    print_w(f"\tSample Dimensions: \t\t\t {samples.shape}")
     write_raster(samples, profile, f'{DATA_DIR}/{CITY}/others/{CITY}_samples.tif', nodata=-1, dtype='int8')
     del index, samples, analysis
+
