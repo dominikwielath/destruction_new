@@ -3,7 +3,7 @@ import os
 import re
 import pandas as pd
 
-runs_dir = "/lustre/ific.uv.es/ml/iae091/outputs/runs/hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_1/"
+runs_dir = "/lustre/ific.uv.es/ml/iae091/outputs/runs/hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_3/"
 
 # Get the directory in which the runs are saved as input
 parser = argparse.ArgumentParser()
