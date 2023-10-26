@@ -120,7 +120,7 @@ while IFS=" | " read -r id dropout lr filter unit; do
         echo "-------------------"
         echo ""
         
-        python3 -u train.py --model double --cities $city_list --runs_dir $runs_subdirectory --run_id $id --dropout $dropout --lr $lr --filters $filter --units $unit --data_dir $data_path --output_dir $output_path 
+        python3 -u train_corrected.py --model double --cities $city_list --runs_dir $runs_subdirectory --run_id $id --dropout $dropout --lr $lr --filters $filter --units $unit --data_dir $data_path --output_dir $output_path 
     fi
 done < "$input_file"
 
