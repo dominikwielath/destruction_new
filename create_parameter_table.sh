@@ -11,8 +11,8 @@ declare -a Cities=('hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubiz
 # declare -a Cities=('aleppo' 'hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha')
 
 declare -a Dropouts=("0.05" "0.10" "0.15")
-declare -a Units=("64" "128")
-declare -a Filters=("64" "128")
+declare -a Units=("64")
+declare -a Filters=("128")
 declare -a LearningRates=("0.00003" "0.0001")
 
 
@@ -51,8 +51,8 @@ echo "-----------------------------------------------" >> "$output_file"
 
 id=0
 
-for dropout in "${Dropouts[@]}"; do
-    for lr in "${LearningRates[@]}"; do
+for lr in "${LearningRates[@]}"; do
+    for dropout in "${Dropouts[@]}"; do
         for filter in "${Filters[@]}"; do
             for unit in "${Units[@]}"; do
 		echo "$id | $dropout | $lr | $filter | $unit" >> "$output_file"
