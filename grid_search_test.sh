@@ -4,7 +4,7 @@
 # Artemisa
 output_path="/lustre/ific.uv.es/ml/iae091/outputs" # !!! Stop before the "/runs" and "/data" subdirectories !!!
 data_path="/lustre/ific.uv.es/ml/iae091/data/"
-runs_subdirectory="hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_4"
+runs_subdirectory="hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_5"
 
 # Work Station 
 # output_path="/media/andre/Samsung8TB/mwd-latest/outputs" # !!! Stop before the "/runs" and "/data" subdirectories !!!
@@ -108,6 +108,58 @@ else
 fi
 
 
+while IFS=" | " read -r line; do
+    # Count the number of "|" symbols in the row
+    num_columns=$(echo "$line" | tr -cd '|' | wc -c)
+    num_columns=$num_columns + 1
+done
+
+if [ $num_columns -eq 5 ]; then
+# Walk through the parameters table starting with the highest id plus one
+    while IFS=" | " read -r id drop_city dropout lr filter unit; do
+        if [[ "$id" != "ID" && "$id" != "-----------------------------------------------" && $id -gt $highest_value ]]; then
+            echo "Next run to start:"
+            echo "ID: $id"
+            echo "Drop City: $drop_city"
+            echo "Dropout: $dropout"
+            echo "Learning Rate: $lr"
+            echo "Filters: $filter"
+            echo "Units: $unit"
+            echo "-------------------"
+            echo ""
+            for city in "${city_list[@]}"; do
+                if [ "$city" != "$drop_city" ]; then
+                    city_remain+=("$city")
+                fi
+            done
+            python3 -u train_corrected.py --model double --cities $city_remain --runs_dir $runs_subdirectory --run_id $id --dropout $dropout --lr $lr --filters $filter --units $unit --data_dir $data_path --output_dir $output_path
+        fi
+    done < "$input_file"
+                
+elif [ $num_columns -eq 4 ]; then
+# Walk through the parameters table starting with the highest id plus one
+    while IFS=" | " read -r id dropout lr filter unit; do
+        if [[ "$id" != "ID" && "$id" != "-----------------------------------------------" && $id -gt $highest_value ]]; then
+            echo "Next run to start:"
+            echo "ID: $id"
+            echo "Dropout: $dropout"
+            echo "Learning Rate: $lr"
+            echo "Filters: $filter"
+            echo "Units: $unit"
+            echo "-------------------"
+            echo ""
+            python3 -u train_corrected.py --model double --cities $city_list --runs_dir $runs_subdirectory --run_id $id --dropout $dropout --lr $lr --filters $filter --units $unit --data_dir $data_path --output_dir $output_path
+        fi
+    done < "$input_file"  
+fi
+
+
+
+
+
+
+
+
 # Walk through the parameters table starting with the highest id plus one
 while IFS=" | " read -r id dropout lr filter unit; do
     if [[ "$id" != "ID" && "$id" != "-----------------------------------------------" && $id -gt $highest_value ]]; then
@@ -122,6 +174,6 @@ while IFS=" | " read -r id dropout lr filter unit; do
         
         python3 -u train_corrected.py --model double --cities $city_list --runs_dir $runs_subdirectory --run_id $id --dropout $dropout --lr $lr --filters $filter --units $unit --data_dir $data_path --output_dir $output_path 
     fi
-done < "$input_file"
+
 
 

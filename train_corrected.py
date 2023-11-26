@@ -364,9 +364,10 @@ def encoder_block_separated(inputs, filters:int=1, dropout=0, n=1, name:str=''):
     tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, name=f'{name}_block1')	
     tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, name=f'{name}_block2')	
     tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name=f'{name}_block3')	
-    #tensor  = convolution_block(tensor, filters=filters*8, dropout=dropout, name=f'{name}_block4')	
-    #tensor  = convolution_block(tensor, filters=filters*16, dropout=dropout, name=f'{name}_block5')	
-    outputs = layers.Flatten(name=f'{name}_flatten')(tensor)	
+    tensor  = convolution_block(tensor, filters=filters*8, dropout=dropout, name=f'{name}_block4')	
+    tensor  = convolution_block(tensor, filters=filters*16, dropout=dropout, name=f'{name}_block5')	
+    outputs = layers.GlobalAveragePooling2D(name='{name}_global_pooling')(tensor)	
+    #outputs = layers.Flatten(name=f'{name}_flatten')(tensor)	
     return outputs
 
 def encoder_block_shared(shape:tuple, filters:int=1, n=1, dropout=0):	
@@ -434,7 +435,7 @@ def double_convolutional_network(shape:tuple, args_encode:dict, args_dense:dict)
     # Hidden dense layers
     concat  = layers.Concatenate(name='concatenate')(inputs=[encode1, encode2])
     dense   = dense_block(concat, **args_dense, name='dense_block1')
-    dense   = dense_block(dense,  **args_dense, name='dense_block2')
+    #dense   = dense_block(dense,  **args_dense, name='dense_block2')
     #dense   = dense_block(dense,  **args_dense, name='dense_block3')
     # Output layer
     outputs = layers.Dense(units=1, activation='sigmoid', name='outputs')(dense)
