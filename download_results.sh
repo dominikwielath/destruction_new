@@ -1,8 +1,8 @@
 #!/bin/bash
 
 remote_server="iae0911@mlui01.ific.uv.es"
-artemisa_runs_dir="/lustre/ific.uv.es/ml/iae091/outputs/runs/hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_4"
-local_runs_dir="/home/dominik/Documents/ra_hannes/war-destruction/artemisa-results/hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_4"
+artemisa_runs_dir="/lustre/ific.uv.es/ml/iae091/outputs/runs/hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_6"
+local_runs_dir="/home/dominik/Documents/ra_hannes/war-destruction/artemisa-results/hostomel-irpin-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_6"
 
 echo "The following files/directories exist locally:"
 echo "$(ls $local_runs_dir)"
