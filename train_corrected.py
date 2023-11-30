@@ -364,7 +364,7 @@ def encoder_block_separated(inputs, filters:int=1, dropout=0, n=1, name:str=''):
     tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, name=f'{name}_block1')	
     tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, name=f'{name}_block2')	
     tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name=f'{name}_block3')	
-    tensor  = convolution_block(tensor, filters=filters*8, dropout=dropout, name=f'{name}_block4')	
+    #tensor  = convolution_block(tensor, filters=filters*8, dropout=dropout, name=f'{name}_block4')	
     #tensor  = convolution_block(tensor, filters=filters*16, dropout=dropout, name=f'{name}_block5')	
     outputs = layers.GlobalAveragePooling2D(name=f'{name}_global_pooling')(tensor)	
     #outputs = layers.Flatten(name=f'{name}_flatten')(tensor)	
