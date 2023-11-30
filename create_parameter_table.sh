@@ -10,10 +10,11 @@ declare -a Cities=('hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubiz
 # output_path="/media/andre/Samsung8TB/mwd-latest/outputs/runs"
 # declare -a Cities=('aleppo' 'hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha')
 
-declare -a Dropouts=("0.05" "0.10")
-declare -a Units=("64" "128")
-declare -a Filters=("64" "128")
-declare -a LearningRates=("0.00003" "0.0001")
+declare -a Dropouts=("0.05")
+declare -a Units=("128")
+declare -a Filters=("64")
+declare -a LearningRates=("0.00003")
+models=10
 
 
 
@@ -51,14 +52,17 @@ echo "-----------------------------------------------" >> "$output_file"
 
 id=0
 
-for lr in "${LearningRates[@]}"; do
-    for dropout in "${Dropouts[@]}"; do
-        for filter in "${Filters[@]}"; do
-            for unit in "${Units[@]}"; do
-		echo "$id | $dropout | $lr | $filter | $unit" >> "$output_file"
-		((id++))
+
+for ((i=0; i<=$models; i++)); do
+    for lr in "${LearningRates[@]}"; do
+        for dropout in "${Dropouts[@]}"; do
+            for filter in "${Filters[@]}"; do
+                for unit in "${Units[@]}"; do
+		    echo "$id | $dropout | $lr | $filter | $unit" >> "$output_file"
+		    ((id++))
+	        done
 	    done
-	done
+        done
     done
 done
 
