@@ -10,11 +10,11 @@ declare -a Cities=('hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubiz
 # output_path="/media/andre/Samsung8TB/mwd-latest/outputs/runs"
 # declare -a Cities=('aleppo' 'hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha')
 
-declare -a Dropouts=("0.05")
-declare -a Units=("128")
-declare -a Filters=("64")
+declare -a Dropouts=("0.05" "0.1")
+declare -a Units=("32" "64" "128")
+declare -a Filters=("64" "128")
 declare -a LearningRates=("0.00003")
-models=10
+models=0
 
 
 
