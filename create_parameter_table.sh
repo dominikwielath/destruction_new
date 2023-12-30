@@ -10,13 +10,17 @@ declare -a Cities=('hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubiz
 # output_path="/media/andre/Samsung8TB/mwd-latest/outputs/runs"
 # declare -a Cities=('aleppo' 'hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha')
 
-declare -a Dropouts=("0.05" "0.1")
-declare -a Units=("32" "64" "128")
-declare -a Filters=("64" "128")
-declare -a LearningRates=("0.00003")
+#declare -a Dropouts=("0.05" "0.1")
+#declare -a Units=("32" "64" "128")
+#declare -a Filters=("64" "128")
+#declare -a LearningRates=("0.00003")
 models=0
 
-
+# Best parameters of the model based on gridsearch 
+Dropouts="0.15"
+Units="64"
+Filters="64"
+LearningRates="0.00003" # Learning Rate
 
 # Get the runs directory name and create the directory if it does not exist yet
 # Join array elements with a dash (-)

@@ -9,8 +9,8 @@ declare -a Cities=('hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubiz
 # output_path="/media/andre/Samsung8TB/mwd-latest/outputs/runs"
 # declare -a Cities=('aleppo' 'hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha')
 
-dropout="0.15"
-unit="128"
+dropout="0.10"
+unit="64"
 filter="64"
 lr="0.00003" # Learning Rate
 
