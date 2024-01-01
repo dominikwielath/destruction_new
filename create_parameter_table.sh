@@ -4,7 +4,7 @@
 # Define output folder, cities and parameters 
 # Artemisa
 output_path="/lustre/ific.uv.es/ml/iae091/outputs/runs"
-declare -a Cities=('hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha' 'aleppo' 'damascus' 'daraa' 'deirezzor' 'hama' 'homs' 'idlib' 'raqqa')
+declare -a Cities=('irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha' 'aleppo' 'damascus' 'daraa' 'deirezzor' 'hama' 'homs' 'idlib' 'raqqa')
 
 # Work Station
 # output_path="/media/andre/Samsung8TB/mwd-latest/outputs/runs"
@@ -17,7 +17,7 @@ declare -a Cities=('hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubiz
 models=0
 
 # Best parameters of the model based on gridsearch 
-Dropouts="0.15"
+Dropouts="0.10"
 Units="64"
 Filters="64"
 LearningRates="0.00003" # Learning Rate
