@@ -4,7 +4,7 @@
 # Define output folder, cities and parameters 
 # Artemisa
 output_path="/lustre/ific.uv.es/ml/iae091/outputs/runs"
-declare -a Cities=('irpin' 'kharkiv' 'livoberezhnyi' 'moschun' 'rubizhne' 'volnovakha' 'aleppo' 'damascus' 'daraa' 'deirezzor' 'hama' 'homs' 'idlib' 'raqqa')
+declare -a Cities=('hostomel' 'irpin' 'kharkiv' 'livoberezhnyi' 'rubizhne' 'volnovakha' 'aleppo' 'damascus' 'daraa' 'deirezzor' 'hama' 'homs' 'idlib' 'raqqa')
 
 # Work Station
 # output_path="/media/andre/Samsung8TB/mwd-latest/outputs/runs"
