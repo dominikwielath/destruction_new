@@ -3,4 +3,4 @@
 # eval "$(conda shell.bash hook)"
 # conda activate $EXERCISE_ENVIRONMENT
 
-python -u predict.py 0
+python -u predict.py 7
