@@ -24,7 +24,7 @@ python -m predict 3 aleppo,daraa
 # CITIES = ['hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'moschun', 'rubizhne', 'volnovakha', 'aleppo', 'damascus', 'daraa', 'deirezzor','hama', 'homs', 'idlib', 'raqqa']
 CITIES = ['hostomel', 'irpin', 'kharkiv', 'livoberezhnyi', 'rubizhne', 'volnovakha', 'aleppo', 'damascus', 'daraa', 'deirezzor','hama', 'homs', 'idlib', 'raqqa']
 
-OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs/runs/hostomel-irpin-kharkiv-livoberezhnyi-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_1"
+OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs/runs/hostomel-kharkiv-livoberezhnyi-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_1"
 DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 
 # ## For workstation
