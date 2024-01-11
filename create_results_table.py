@@ -3,7 +3,7 @@ import os
 import re
 import pandas as pd
 
-runs_dir = "/lustre/ific.uv.es/ml/iae091/outputs/runs/hostomel-kharkiv-livoberezhnyi-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_1/"
+runs_dir = "/lustre/ific.uv.es/ml/iae091/outputs/runs/hostomel-kharkiv-livoberezhnyi-moschun-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_1/"
 #runs_dir = "/home/dominik/Documents/ra_hannes/war-destruction/artemisa-results/hostomel-kharkiv-livoberezhnyi-rubizhne-volnovakha-aleppo-damascus-daraa-deirezzor-hama-homs-idlib-raqqa_1"
 
 
